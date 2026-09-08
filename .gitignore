@@ -1,0 +1,38 @@
+# Dependências
+node_modules/
+
+# Build / dist do electron-vite
+dist/
+dist-electron/
+out/
+release/
+
+# Ambiente / segredos (API key do TMDb, etc.)
+.env
+.env.local
+.env.*.local
+
+# Banco de dados local (SQLite) — dados pessoais, não versionar
+*.sqlite
+*.sqlite3
+*.db
+
+# Binários nativos recompilados (better-sqlite3 etc.)
+build/Release/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor / SO
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# electron-builder
+*.dmg
+*.zip
+*.blockmap
