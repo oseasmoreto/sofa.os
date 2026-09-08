@@ -53,6 +53,7 @@ const PROVIDER_NAME_ALIASES: Record<string, string> = {
   'disney plus': 'disneyplus',
   'disney+': 'disneyplus',
   'amazon prime video': 'primevideo',
+  'amazon video': 'primevideo',
   'prime video': 'primevideo',
   'apple tv': 'appletv',
   'apple tv+': 'appletv',

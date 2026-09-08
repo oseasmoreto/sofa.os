@@ -22,11 +22,25 @@ export function buildLaunchPlan(app: StreamingApp, query?: string): LaunchPlan {
   return { kind: 'browser', target: url }
 }
 
+async function openInBrowser(url: string): Promise<void> {
+  switch (process.platform) {
+    case 'darwin':
+      await execFileAsync('open', ['-a', 'Safari', url])
+      break
+    case 'win32':
+      await execFileAsync('cmd', ['/c', 'start', '""', 'msedge', url])
+      break
+    default:
+      await execFileAsync('xdg-open', [url])
+      break
+  }
+}
+
 async function executeLaunchPlan(plan: LaunchPlan): Promise<void> {
   if (plan.kind === 'native') {
     await execFileAsync('open', ['-a', plan.target])
   } else {
-    await execFileAsync('open', ['-a', 'Safari', plan.target])
+    await openInBrowser(plan.target)
   }
 }
 

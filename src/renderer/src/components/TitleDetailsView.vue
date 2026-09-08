@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Star, X } from 'lucide-vue-next'
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import type { Title, TitleDetails } from '../../../shared/types'
-import { matchStreamingApp } from '../../../shared/streamingApps'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import type { Title, TitleDetails, WatchProvider } from '../../../shared/types'
+import { matchStreamingApp, type StreamingApp } from '../../../shared/streamingApps'
 import { getTitleDetails } from '../api/tmdb'
 import { launchApp } from '../api/appLauncher'
 import { pauseSpatialNavigation, resumeSpatialNavigation } from '../composables/spatialNav'
@@ -14,18 +14,35 @@ const overlayRef = ref<HTMLDivElement | null>(null)
 const details = ref<TitleDetails | null>(null)
 const loadingExtras = ref(true)
 
-const watchOption = computed(() => {
-  if (!details.value) return null
+const actionableProviders = computed(() => {
+  if (!details.value) return []
 
-  for (const provider of details.value.providers) {
-    const app = matchStreamingApp(provider.name)
-    if (app) return { app, provider }
-  }
-
-  return null
+  return details.value.providers
+    .map((provider) => ({ provider, app: matchStreamingApp(provider.name) }))
+    .filter((entry): entry is { provider: WatchProvider; app: StreamingApp } => Boolean(entry.app))
 })
 
-async function loadExtras(): Promise<void> {
+const providerRefs = ref<HTMLElement[]>([])
+const focusedProviderIndex = ref(0)
+
+function setProviderRef(el: Element | null, index: number): void {
+  if (el instanceof HTMLElement) providerRefs.value[index] = el
+}
+
+function focusProvider(index: number): void {
+  if (!actionableProviders.value.length) return
+  const clamped = Math.min(Math.max(index, 0), actionableProviders.value.length - 1)
+  focusedProviderIndex.value = clamped
+  providerRefs.value[clamped]?.focus()
+}
+
+function launchProvider(app: StreamingApp): void {
+  launchApp(app.id, props.title.title).catch((error: unknown) => {
+    console.error(`Falha ao abrir ${app.name}:`, error)
+  })
+}
+
+async function loadExtrasAndFocus(): Promise<void> {
   loadingExtras.value = true
   details.value = null
   try {
@@ -35,31 +52,41 @@ async function loadExtras(): Promise<void> {
   } finally {
     loadingExtras.value = false
   }
-}
 
-function handleWatchClick(): void {
-  if (!watchOption.value) return
-
-  launchApp(watchOption.value.app.id, props.title.title).catch((error: unknown) => {
-    console.error(`Falha ao abrir ${watchOption.value?.app.name}:`, error)
-  })
+  await nextTick()
+  if (actionableProviders.value.length) {
+    focusProvider(0)
+  }
 }
 
 function onKeydown(event: KeyboardEvent): void {
-  if (event.key === 'Escape') emit('close')
+  if (event.key === 'Escape') {
+    emit('close')
+    return
+  }
+
+  if (!actionableProviders.value.length) return
+
+  if (event.key === 'ArrowRight') {
+    event.preventDefault()
+    focusProvider(focusedProviderIndex.value + 1)
+  } else if (event.key === 'ArrowLeft') {
+    event.preventDefault()
+    focusProvider(focusedProviderIndex.value - 1)
+  }
 }
 
 onMounted(() => {
-  loadExtras()
   overlayRef.value?.focus()
   pauseSpatialNavigation()
+  loadExtrasAndFocus()
 })
 
 onUnmounted(() => {
   resumeSpatialNavigation()
 })
 
-watch(() => props.title, loadExtras)
+watch(() => props.title, loadExtrasAndFocus)
 </script>
 
 <template>
@@ -115,22 +142,42 @@ watch(() => props.title, loadExtras)
             <div class="section">
               <h2 class="section-label">Onde assistir</h2>
               <div v-if="details.providers.length" class="providers-row">
-                <img
-                  v-for="provider in details.providers"
-                  :key="provider.id"
-                  class="provider-logo"
-                  :src="`https://image.tmdb.org/t/p/w92${provider.logoPath}`"
-                  :alt="provider.name"
-                  :title="provider.name"
-                />
+                <template v-for="provider in details.providers" :key="provider.id">
+                  <button
+                    v-if="matchStreamingApp(provider.name)"
+                    :ref="
+                      (el) =>
+                        setProviderRef(
+                          el as Element | null,
+                          actionableProviders.findIndex(
+                            (entry) => entry.provider.id === provider.id
+                          )
+                        )
+                    "
+                    type="button"
+                    class="provider-button"
+                    :title="`Assistir em ${provider.name}`"
+                    @click="launchProvider(matchStreamingApp(provider.name)!)"
+                    @keydown.enter="launchProvider(matchStreamingApp(provider.name)!)"
+                  >
+                    <img
+                      class="provider-logo"
+                      :src="`https://image.tmdb.org/t/p/w92${provider.logoPath}`"
+                      :alt="provider.name"
+                    />
+                  </button>
+                  <img
+                    v-else
+                    class="provider-logo provider-logo-disabled"
+                    :src="`https://image.tmdb.org/t/p/w92${provider.logoPath}`"
+                    :alt="provider.name"
+                    :title="`${provider.name} (abertura não suportada ainda)`"
+                  />
+                </template>
               </div>
               <p v-else class="empty">Não disponível em streaming no Brasil no momento.</p>
               <p class="attribution">Dados de "onde assistir" fornecidos por TMDB e JustWatch.</p>
             </div>
-
-            <button v-if="watchOption" type="button" class="watch-button" @click="handleWatchClick">
-              Assistir em {{ watchOption.app.name }}
-            </button>
           </template>
         </div>
       </div>
@@ -295,11 +342,38 @@ watch(() => props.title, loadExtras)
   gap: 10px;
 }
 
+.provider-button {
+  padding: 0;
+  border: none;
+  border-radius: 10px;
+  background: none;
+  cursor: pointer;
+  outline: none;
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.provider-button:hover {
+  transform: scale(1.08);
+}
+
+.provider-button:focus-visible {
+  transform: scale(1.1);
+  box-shadow: 0 0 0 3px #a60866;
+  border-radius: 10px;
+}
+
 .provider-logo {
   width: 44px;
   height: 44px;
   border-radius: 10px;
   object-fit: cover;
+  display: block;
+}
+
+.provider-logo-disabled {
+  opacity: 0.35;
 }
 
 .empty {
@@ -312,22 +386,5 @@ watch(() => props.title, loadExtras)
   margin: 0;
   font-size: 11px;
   color: var(--ev-c-text-3);
-}
-
-.watch-button {
-  align-self: flex-start;
-  margin-top: 8px;
-  padding: 12px 28px;
-  border: none;
-  border-radius: 24px;
-  background-color: #a60866;
-  color: #fff;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.watch-button:hover {
-  background-color: #8a0655;
 }
 </style>
