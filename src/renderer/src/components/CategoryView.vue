@@ -1,25 +1,19 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import type { Title } from '../../../shared/types'
-import { getPopularMovies, getTopRatedMovies, getTrending } from '../api/tmdb'
 import Carousel from './Carousel.vue'
 
-const trending = ref<Title[]>([])
-const popular = ref<Title[]>([])
-const topRated = ref<Title[]>([])
+const props = defineProps<{
+  rows: { label: string; fetch: () => Promise<Title[]> }[]
+}>()
+
+const results = ref<Title[][]>([])
 const loading = ref(true)
 const error = ref<string | null>(null)
 
 onMounted(async () => {
   try {
-    const [trendingResult, popularResult, topRatedResult] = await Promise.all([
-      getTrending(),
-      getPopularMovies(),
-      getTopRatedMovies()
-    ])
-    trending.value = trendingResult
-    popular.value = popularResult
-    topRated.value = topRatedResult
+    results.value = await Promise.all(props.rows.map((row) => row.fetch()))
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Erro ao carregar catálogo do TMDb'
   } finally {
@@ -29,21 +23,24 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="discover">
+  <div class="category-view">
     <div v-if="loading" class="centered">
       <img class="logo" src="../assets/sofaos.svg" alt="sofa.OS" />
     </div>
     <p v-else-if="error" class="centered status">{{ error }}</p>
     <template v-else>
-      <Carousel label="Em alta" :items="trending" />
-      <Carousel label="Populares" :items="popular" />
-      <Carousel label="Mais bem avaliados" :items="topRated" />
+      <Carousel
+        v-for="(row, index) in rows"
+        :key="row.label"
+        :label="row.label"
+        :items="results[index] ?? []"
+      />
     </template>
   </div>
 </template>
 
 <style scoped>
-.discover {
+.category-view {
   flex: 1;
   display: flex;
   flex-direction: column;

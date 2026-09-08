@@ -3,7 +3,10 @@ import { ref } from 'vue'
 import WindowControls from './components/WindowControls.vue'
 import Sidebar, { type SidebarView } from './components/Sidebar.vue'
 import TopBar from './components/TopBar.vue'
-import Discover from './components/Discover.vue'
+import HomeView from './components/HomeView.vue'
+import MoviesView from './components/MoviesView.vue'
+import SeriesView from './components/SeriesView.vue'
+import NewReleasesView from './components/NewReleasesView.vue'
 import WatchlistView from './components/WatchlistView.vue'
 import TitleDetailsView from './components/TitleDetailsView.vue'
 import { useSelection } from './composables/selection'
@@ -21,7 +24,10 @@ const activeView = ref<SidebarView>('home')
     <Sidebar v-model="activeView" />
     <div class="main-column">
       <TopBar />
-      <Discover v-if="activeView === 'home'" />
+      <HomeView v-if="activeView === 'home'" />
+      <MoviesView v-else-if="activeView === 'movies'" />
+      <SeriesView v-else-if="activeView === 'series'" />
+      <NewReleasesView v-else-if="activeView === 'releases'" />
       <WatchlistView v-else-if="activeView === 'watchlist'" />
     </div>
   </div>

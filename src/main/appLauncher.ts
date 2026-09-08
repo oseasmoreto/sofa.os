@@ -22,10 +22,38 @@ export function buildLaunchPlan(app: StreamingApp, query?: string): LaunchPlan {
   return { kind: 'browser', target: url }
 }
 
+async function enterSafariFullscreen(): Promise<void> {
+  // Safari não expõe uma propriedade AppleScript nativa para tela cheia; o
+  // caminho padrão é ativar o app e simular o atalho via System Events.
+  // Isso exige permissão de Acessibilidade concedida ao app (uma vez só,
+  // em Ajustes do Sistema > Privacidade e Segurança > Acessibilidade).
+  const script = `
+    tell application "Safari" to activate
+    delay 0.6
+    tell application "System Events"
+      tell process "Safari"
+        set isFull to false
+        try
+          set isFull to (value of attribute "AXFullScreen" of window 1)
+        end try
+        if not isFull then
+          keystroke "f" using {control down, command down}
+        end if
+      end tell
+    end tell
+  `
+  try {
+    await execFileAsync('osascript', ['-e', script])
+  } catch (error) {
+    console.error('Não foi possível colocar o Safari em tela cheia:', error)
+  }
+}
+
 async function openInBrowser(url: string): Promise<void> {
   switch (process.platform) {
     case 'darwin':
       await execFileAsync('open', ['-a', 'Safari', url])
+      await enterSafariFullscreen()
       break
     case 'win32':
       await execFileAsync('cmd', ['/c', 'start', '""', 'msedge', url])

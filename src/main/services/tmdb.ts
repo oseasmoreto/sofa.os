@@ -110,6 +110,40 @@ export async function getTopRatedMovies(): Promise<Title[]> {
   return data.results.slice(0, CAROUSEL_SIZE).map((raw) => toTitle(raw, 'movie'))
 }
 
+export async function getTrendingMovies(): Promise<Title[]> {
+  const data = await request<TmdbListResponse>('/trending/movie/week')
+  return data.results.slice(0, CAROUSEL_SIZE).map((raw) => toTitle(raw, 'movie'))
+}
+
+export async function getTrendingTv(): Promise<Title[]> {
+  const data = await request<TmdbListResponse>('/trending/tv/week')
+  return data.results.slice(0, CAROUSEL_SIZE).map((raw) => toTitle(raw, 'tv'))
+}
+
+export async function getPopularTv(): Promise<Title[]> {
+  const data = await request<TmdbListResponse>('/discover/tv', {
+    sort_by: 'popularity.desc',
+    watch_region: 'BR'
+  })
+  return data.results.slice(0, CAROUSEL_SIZE).map((raw) => toTitle(raw, 'tv'))
+}
+
+export async function getTopRatedTv(): Promise<Title[]> {
+  const data = await request<TmdbListResponse>('/discover/tv', {
+    sort_by: 'vote_average.desc',
+    'vote_count.gte': '100',
+    watch_region: 'BR'
+  })
+  return data.results.slice(0, CAROUSEL_SIZE).map((raw) => toTitle(raw, 'tv'))
+}
+
+export async function getNewReleases(): Promise<Title[]> {
+  const data = await request<TmdbListResponse>('/movie/now_playing', {
+    region: 'BR'
+  })
+  return data.results.slice(0, CAROUSEL_SIZE).map((raw) => toTitle(raw, 'movie'))
+}
+
 function dedupeProviders(providers: TmdbProvider[]): WatchProvider[] {
   const byId = new Map<number, TmdbProvider>()
   for (const provider of providers) {
@@ -150,6 +184,11 @@ export function registerTmdbIpc(): void {
   ipcMain.handle('tmdb:getTrending', () => getTrending())
   ipcMain.handle('tmdb:getPopularMovies', () => getPopularMovies())
   ipcMain.handle('tmdb:getTopRatedMovies', () => getTopRatedMovies())
+  ipcMain.handle('tmdb:getTrendingMovies', () => getTrendingMovies())
+  ipcMain.handle('tmdb:getTrendingTv', () => getTrendingTv())
+  ipcMain.handle('tmdb:getPopularTv', () => getPopularTv())
+  ipcMain.handle('tmdb:getTopRatedTv', () => getTopRatedTv())
+  ipcMain.handle('tmdb:getNewReleases', () => getNewReleases())
   ipcMain.handle('tmdb:getTitleDetails', (_event, id: number, mediaType: MediaType) =>
     getTitleDetails(id, mediaType)
   )

@@ -16,6 +16,11 @@ interface SofaApi {
     getTrending: () => Promise<Title[]>
     getPopularMovies: () => Promise<Title[]>
     getTopRatedMovies: () => Promise<Title[]>
+    getTrendingMovies: () => Promise<Title[]>
+    getTrendingTv: () => Promise<Title[]>
+    getPopularTv: () => Promise<Title[]>
+    getTopRatedTv: () => Promise<Title[]>
+    getNewReleases: () => Promise<Title[]>
     getTitleDetails: (id: number, mediaType: MediaType) => Promise<TitleDetails>
   }
   app: {

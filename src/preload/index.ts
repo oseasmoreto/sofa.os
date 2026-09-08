@@ -20,6 +20,11 @@ const api = {
     getTrending: (): Promise<Title[]> => ipcRenderer.invoke('tmdb:getTrending'),
     getPopularMovies: (): Promise<Title[]> => ipcRenderer.invoke('tmdb:getPopularMovies'),
     getTopRatedMovies: (): Promise<Title[]> => ipcRenderer.invoke('tmdb:getTopRatedMovies'),
+    getTrendingMovies: (): Promise<Title[]> => ipcRenderer.invoke('tmdb:getTrendingMovies'),
+    getTrendingTv: (): Promise<Title[]> => ipcRenderer.invoke('tmdb:getTrendingTv'),
+    getPopularTv: (): Promise<Title[]> => ipcRenderer.invoke('tmdb:getPopularTv'),
+    getTopRatedTv: (): Promise<Title[]> => ipcRenderer.invoke('tmdb:getTopRatedTv'),
+    getNewReleases: (): Promise<Title[]> => ipcRenderer.invoke('tmdb:getNewReleases'),
     getTitleDetails: (id: number, mediaType: MediaType): Promise<TitleDetails> =>
       ipcRenderer.invoke('tmdb:getTitleDetails', id, mediaType)
   },

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Bookmark, Home } from 'lucide-vue-next'
+import { Bookmark, Film, Home, Sparkles, Tv } from 'lucide-vue-next'
 import { onMounted, onUnmounted, ref } from 'vue'
 import {
   focusGrid,
@@ -8,13 +8,16 @@ import {
   setLeftEdgeHandler
 } from '../composables/spatialNav'
 
-export type SidebarView = 'home' | 'watchlist'
+export type SidebarView = 'home' | 'movies' | 'series' | 'releases' | 'watchlist'
 
 const props = defineProps<{ modelValue: SidebarView }>()
 const emit = defineEmits<{ 'update:modelValue': [SidebarView] }>()
 
 const navItems: { id: SidebarView; label: string; icon: typeof Home }[] = [
   { id: 'home', label: 'Home', icon: Home },
+  { id: 'movies', label: 'Filmes', icon: Film },
+  { id: 'series', label: 'Séries', icon: Tv },
+  { id: 'releases', label: 'Lançamentos', icon: Sparkles },
   { id: 'watchlist', label: 'Minha Lista', icon: Bookmark }
 ]
 
