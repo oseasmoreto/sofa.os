@@ -32,3 +32,8 @@ export interface TitleDetails extends Title {
   cast: CastMember[]
   providers: WatchProvider[]
 }
+
+export interface TitlePage {
+  items: Title[]
+  hasMore: boolean
+}

@@ -9,6 +9,8 @@ defineProps<{
   items: Title[]
 }>()
 
+const emit = defineEmits<{ loadMore: [] }>()
+
 const { select } = useSelection()
 const posterBase = 'https://image.tmdb.org/t/p/w300'
 
@@ -16,6 +18,15 @@ const cardRefs = ref<HTMLElement[]>([])
 
 function setCardRef(el: Element | null, index: number): void {
   if (el instanceof HTMLElement) cardRefs.value[index] = el
+}
+
+const SCROLL_THRESHOLD = 400
+
+function onScroll(event: Event): void {
+  const el = event.target as HTMLDivElement
+  if (el.scrollWidth - el.scrollLeft - el.clientWidth < SCROLL_THRESHOLD) {
+    emit('loadMore')
+  }
 }
 
 let unregister: (() => void) | null = null
@@ -32,7 +43,7 @@ onUnmounted(() => {
 <template>
   <section class="carousel">
     <h2 class="label">{{ label }}</h2>
-    <div class="row">
+    <div class="row" @scroll="onScroll">
       <div
         v-for="(item, index) in items"
         :key="`${item.mediaType}-${item.id}`"

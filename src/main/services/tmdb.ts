@@ -1,5 +1,12 @@
 import { ipcMain } from 'electron'
-import type { CastMember, MediaType, Title, TitleDetails, WatchProvider } from '../../shared/types'
+import type {
+  CastMember,
+  MediaType,
+  Title,
+  TitleDetails,
+  TitlePage,
+  WatchProvider
+} from '../../shared/types'
 
 const BASE_URL = 'https://api.themoviedb.org/3'
 
@@ -18,6 +25,8 @@ interface TmdbResult {
 
 interface TmdbListResponse {
   results: TmdbResult[]
+  page: number
+  total_pages: number
 }
 
 interface TmdbCastMember {
@@ -84,64 +93,74 @@ function toTitle(raw: TmdbResult, fallbackMediaType: MediaType): Title {
   }
 }
 
-const CAROUSEL_SIZE = 12
-
-export async function getTrending(): Promise<Title[]> {
-  const data = await request<TmdbListResponse>('/trending/all/week')
-  return data.results.slice(0, CAROUSEL_SIZE).map((raw) => toTitle(raw, 'movie'))
+function toTitlePage(data: TmdbListResponse, mediaType: MediaType): TitlePage {
+  return {
+    items: data.results.map((raw) => toTitle(raw, mediaType)),
+    hasMore: data.page < data.total_pages
+  }
 }
 
-export async function getPopularMovies(): Promise<Title[]> {
+export async function getTrending(page = 1): Promise<TitlePage> {
+  const data = await request<TmdbListResponse>('/trending/all/week', { page: String(page) })
+  return toTitlePage(data, 'movie')
+}
+
+export async function getPopularMovies(page = 1): Promise<TitlePage> {
   const data = await request<TmdbListResponse>('/discover/movie', {
     sort_by: 'popularity.desc',
     watch_region: 'BR',
-    region: 'BR'
+    region: 'BR',
+    page: String(page)
   })
-  return data.results.slice(0, CAROUSEL_SIZE).map((raw) => toTitle(raw, 'movie'))
+  return toTitlePage(data, 'movie')
 }
 
-export async function getTopRatedMovies(): Promise<Title[]> {
+export async function getTopRatedMovies(page = 1): Promise<TitlePage> {
   const data = await request<TmdbListResponse>('/discover/movie', {
     sort_by: 'vote_average.desc',
     'vote_count.gte': '200',
     watch_region: 'BR',
-    region: 'BR'
+    region: 'BR',
+    page: String(page)
   })
-  return data.results.slice(0, CAROUSEL_SIZE).map((raw) => toTitle(raw, 'movie'))
+  return toTitlePage(data, 'movie')
 }
 
-export async function getTrendingMovies(): Promise<Title[]> {
-  const data = await request<TmdbListResponse>('/trending/movie/week')
-  return data.results.slice(0, CAROUSEL_SIZE).map((raw) => toTitle(raw, 'movie'))
+export async function getTrendingMovies(page = 1): Promise<TitlePage> {
+  const data = await request<TmdbListResponse>('/trending/movie/week', { page: String(page) })
+  return toTitlePage(data, 'movie')
 }
 
-export async function getTrendingTv(): Promise<Title[]> {
-  const data = await request<TmdbListResponse>('/trending/tv/week')
-  return data.results.slice(0, CAROUSEL_SIZE).map((raw) => toTitle(raw, 'tv'))
+export async function getTrendingTv(page = 1): Promise<TitlePage> {
+  const data = await request<TmdbListResponse>('/trending/tv/week', { page: String(page) })
+  return toTitlePage(data, 'tv')
 }
 
-export async function getPopularTv(): Promise<Title[]> {
+export async function getPopularTv(page = 1): Promise<TitlePage> {
   const data = await request<TmdbListResponse>('/discover/tv', {
     sort_by: 'popularity.desc',
-    watch_region: 'BR'
+    watch_region: 'BR',
+    page: String(page)
   })
-  return data.results.slice(0, CAROUSEL_SIZE).map((raw) => toTitle(raw, 'tv'))
+  return toTitlePage(data, 'tv')
 }
 
-export async function getTopRatedTv(): Promise<Title[]> {
+export async function getTopRatedTv(page = 1): Promise<TitlePage> {
   const data = await request<TmdbListResponse>('/discover/tv', {
     sort_by: 'vote_average.desc',
     'vote_count.gte': '100',
-    watch_region: 'BR'
+    watch_region: 'BR',
+    page: String(page)
   })
-  return data.results.slice(0, CAROUSEL_SIZE).map((raw) => toTitle(raw, 'tv'))
+  return toTitlePage(data, 'tv')
 }
 
-export async function getNewReleases(): Promise<Title[]> {
+export async function getNewReleases(page = 1): Promise<TitlePage> {
   const data = await request<TmdbListResponse>('/movie/now_playing', {
-    region: 'BR'
+    region: 'BR',
+    page: String(page)
   })
-  return data.results.slice(0, CAROUSEL_SIZE).map((raw) => toTitle(raw, 'movie'))
+  return toTitlePage(data, 'movie')
 }
 
 function dedupeProviders(providers: TmdbProvider[]): WatchProvider[] {
@@ -181,14 +200,14 @@ export async function getTitleDetails(id: number, mediaType: MediaType): Promise
 }
 
 export function registerTmdbIpc(): void {
-  ipcMain.handle('tmdb:getTrending', () => getTrending())
-  ipcMain.handle('tmdb:getPopularMovies', () => getPopularMovies())
-  ipcMain.handle('tmdb:getTopRatedMovies', () => getTopRatedMovies())
-  ipcMain.handle('tmdb:getTrendingMovies', () => getTrendingMovies())
-  ipcMain.handle('tmdb:getTrendingTv', () => getTrendingTv())
-  ipcMain.handle('tmdb:getPopularTv', () => getPopularTv())
-  ipcMain.handle('tmdb:getTopRatedTv', () => getTopRatedTv())
-  ipcMain.handle('tmdb:getNewReleases', () => getNewReleases())
+  ipcMain.handle('tmdb:getTrending', (_event, page?: number) => getTrending(page))
+  ipcMain.handle('tmdb:getPopularMovies', (_event, page?: number) => getPopularMovies(page))
+  ipcMain.handle('tmdb:getTopRatedMovies', (_event, page?: number) => getTopRatedMovies(page))
+  ipcMain.handle('tmdb:getTrendingMovies', (_event, page?: number) => getTrendingMovies(page))
+  ipcMain.handle('tmdb:getTrendingTv', (_event, page?: number) => getTrendingTv(page))
+  ipcMain.handle('tmdb:getPopularTv', (_event, page?: number) => getPopularTv(page))
+  ipcMain.handle('tmdb:getTopRatedTv', (_event, page?: number) => getTopRatedTv(page))
+  ipcMain.handle('tmdb:getNewReleases', (_event, page?: number) => getNewReleases(page))
   ipcMain.handle('tmdb:getTitleDetails', (_event, id: number, mediaType: MediaType) =>
     getTitleDetails(id, mediaType)
   )

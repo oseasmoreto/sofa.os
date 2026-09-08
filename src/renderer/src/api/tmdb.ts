@@ -1,35 +1,35 @@
-import type { MediaType, Title, TitleDetails } from '../../../shared/types'
+import type { MediaType, TitleDetails, TitlePage } from '../../../shared/types'
 
-export function getTrending(): Promise<Title[]> {
-  return window.api.tmdb.getTrending()
+export function getTrending(page?: number): Promise<TitlePage> {
+  return window.api.tmdb.getTrending(page)
 }
 
-export function getPopularMovies(): Promise<Title[]> {
-  return window.api.tmdb.getPopularMovies()
+export function getPopularMovies(page?: number): Promise<TitlePage> {
+  return window.api.tmdb.getPopularMovies(page)
 }
 
-export function getTopRatedMovies(): Promise<Title[]> {
-  return window.api.tmdb.getTopRatedMovies()
+export function getTopRatedMovies(page?: number): Promise<TitlePage> {
+  return window.api.tmdb.getTopRatedMovies(page)
 }
 
-export function getTrendingMovies(): Promise<Title[]> {
-  return window.api.tmdb.getTrendingMovies()
+export function getTrendingMovies(page?: number): Promise<TitlePage> {
+  return window.api.tmdb.getTrendingMovies(page)
 }
 
-export function getTrendingTv(): Promise<Title[]> {
-  return window.api.tmdb.getTrendingTv()
+export function getTrendingTv(page?: number): Promise<TitlePage> {
+  return window.api.tmdb.getTrendingTv(page)
 }
 
-export function getPopularTv(): Promise<Title[]> {
-  return window.api.tmdb.getPopularTv()
+export function getPopularTv(page?: number): Promise<TitlePage> {
+  return window.api.tmdb.getPopularTv(page)
 }
 
-export function getTopRatedTv(): Promise<Title[]> {
-  return window.api.tmdb.getTopRatedTv()
+export function getTopRatedTv(page?: number): Promise<TitlePage> {
+  return window.api.tmdb.getTopRatedTv(page)
 }
 
-export function getNewReleases(): Promise<Title[]> {
-  return window.api.tmdb.getNewReleases()
+export function getNewReleases(page?: number): Promise<TitlePage> {
+  return window.api.tmdb.getNewReleases(page)
 }
 
 export function getTitleDetails(id: number, mediaType: MediaType): Promise<TitleDetails> {

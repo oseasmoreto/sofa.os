@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
-import type { MediaType, Title, TitleDetails, WatchlistItem } from '../shared/types'
+import type { MediaType, TitleDetails, TitlePage, WatchlistItem } from '../shared/types'
 
 // Custom APIs for renderer
 const api = {
@@ -17,14 +17,22 @@ const api = {
       ipcRenderer.invoke('db:removeFromWatchlist', tmdbId, mediaType)
   },
   tmdb: {
-    getTrending: (): Promise<Title[]> => ipcRenderer.invoke('tmdb:getTrending'),
-    getPopularMovies: (): Promise<Title[]> => ipcRenderer.invoke('tmdb:getPopularMovies'),
-    getTopRatedMovies: (): Promise<Title[]> => ipcRenderer.invoke('tmdb:getTopRatedMovies'),
-    getTrendingMovies: (): Promise<Title[]> => ipcRenderer.invoke('tmdb:getTrendingMovies'),
-    getTrendingTv: (): Promise<Title[]> => ipcRenderer.invoke('tmdb:getTrendingTv'),
-    getPopularTv: (): Promise<Title[]> => ipcRenderer.invoke('tmdb:getPopularTv'),
-    getTopRatedTv: (): Promise<Title[]> => ipcRenderer.invoke('tmdb:getTopRatedTv'),
-    getNewReleases: (): Promise<Title[]> => ipcRenderer.invoke('tmdb:getNewReleases'),
+    getTrending: (page?: number): Promise<TitlePage> =>
+      ipcRenderer.invoke('tmdb:getTrending', page),
+    getPopularMovies: (page?: number): Promise<TitlePage> =>
+      ipcRenderer.invoke('tmdb:getPopularMovies', page),
+    getTopRatedMovies: (page?: number): Promise<TitlePage> =>
+      ipcRenderer.invoke('tmdb:getTopRatedMovies', page),
+    getTrendingMovies: (page?: number): Promise<TitlePage> =>
+      ipcRenderer.invoke('tmdb:getTrendingMovies', page),
+    getTrendingTv: (page?: number): Promise<TitlePage> =>
+      ipcRenderer.invoke('tmdb:getTrendingTv', page),
+    getPopularTv: (page?: number): Promise<TitlePage> =>
+      ipcRenderer.invoke('tmdb:getPopularTv', page),
+    getTopRatedTv: (page?: number): Promise<TitlePage> =>
+      ipcRenderer.invoke('tmdb:getTopRatedTv', page),
+    getNewReleases: (page?: number): Promise<TitlePage> =>
+      ipcRenderer.invoke('tmdb:getNewReleases', page),
     getTitleDetails: (id: number, mediaType: MediaType): Promise<TitleDetails> =>
       ipcRenderer.invoke('tmdb:getTitleDetails', id, mediaType)
   },

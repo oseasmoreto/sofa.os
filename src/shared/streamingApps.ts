@@ -37,14 +37,22 @@ export const streamingApps: StreamingApp[] = [
     name: 'Prime Video',
     color: '#00A8E1',
     initials: 'PV',
-    launch: { type: 'native', appName: 'Prime Video' }
+    launch: {
+      type: 'browser',
+      homeUrl: 'https://www.primevideo.com',
+      searchUrl: 'https://www.primevideo.com/search?phrase={query}'
+    }
   },
   {
     id: 'appletv',
     name: 'Apple TV+',
     color: '#000000',
     initials: 'tv',
-    launch: { type: 'native', appName: 'TV' }
+    launch: {
+      type: 'browser',
+      homeUrl: 'https://tv.apple.com',
+      searchUrl: 'https://tv.apple.com/search?term={query}'
+    }
   }
 ]
 
