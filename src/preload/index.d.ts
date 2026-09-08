@@ -18,6 +18,9 @@ interface SofaApi {
     getTopRatedMovies: () => Promise<Title[]>
     getTitleDetails: (id: number, mediaType: MediaType) => Promise<TitleDetails>
   }
+  app: {
+    launch: (appId: string, query?: string) => Promise<void>
+  }
 }
 
 declare global {

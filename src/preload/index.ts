@@ -22,6 +22,10 @@ const api = {
     getTopRatedMovies: (): Promise<Title[]> => ipcRenderer.invoke('tmdb:getTopRatedMovies'),
     getTitleDetails: (id: number, mediaType: MediaType): Promise<TitleDetails> =>
       ipcRenderer.invoke('tmdb:getTitleDetails', id, mediaType)
+  },
+  app: {
+    launch: (appId: string, query?: string): Promise<void> =>
+      ipcRenderer.invoke('app:launch', appId, query)
   }
 }
 

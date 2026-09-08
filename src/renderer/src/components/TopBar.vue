@@ -2,11 +2,18 @@
 import { onMounted, onUnmounted, ref } from 'vue'
 import { streamingApps } from '../../../shared/streamingApps'
 import { registerRow } from '../composables/spatialNav'
+import { launchApp } from '../api/appLauncher'
 
 const iconRefs = ref<HTMLElement[]>([])
 
 function setIconRef(el: Element | null, index: number): void {
   if (el instanceof HTMLElement) iconRefs.value[index] = el
+}
+
+function open(appId: string): void {
+  launchApp(appId).catch((error: unknown) => {
+    console.error(`Falha ao abrir o app ${appId}:`, error)
+  })
 }
 
 let unregister: (() => void) | null = null
@@ -29,7 +36,10 @@ onUnmounted(() => {
       class="app-icon"
       :style="{ backgroundColor: app.color }"
       :title="app.name"
+      role="button"
       tabindex="0"
+      @click="open(app.id)"
+      @keydown.enter="open(app.id)"
     >
       <span class="app-icon-label">{{ app.initials }}</span>
     </div>
@@ -53,6 +63,7 @@ onUnmounted(() => {
   justify-content: center;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
   outline: none;
+  cursor: pointer;
   transition:
     transform 150ms ease,
     box-shadow 150ms ease;

@@ -5,6 +5,7 @@ import icon from '../../resources/icon.png?asset'
 import { registerWindowControls } from './windowControls'
 import { registerWatchlistIpc } from './watchlist'
 import { registerTmdbIpc } from './services/tmdb'
+import { registerAppLauncherIpc } from './appLauncher'
 
 try {
   process.loadEnvFile()
@@ -64,6 +65,7 @@ app.whenReady().then(() => {
   registerWindowControls()
   registerWatchlistIpc()
   registerTmdbIpc()
+  registerAppLauncherIpc()
 
   createWindow()
 

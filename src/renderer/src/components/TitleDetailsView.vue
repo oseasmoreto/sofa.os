@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { Star, X } from 'lucide-vue-next'
-import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import type { Title, TitleDetails } from '../../../shared/types'
+import { matchStreamingApp } from '../../../shared/streamingApps'
 import { getTitleDetails } from '../api/tmdb'
+import { launchApp } from '../api/appLauncher'
 import { pauseSpatialNavigation, resumeSpatialNavigation } from '../composables/spatialNav'
 
 const props = defineProps<{ title: Title }>()
@@ -11,6 +13,17 @@ const emit = defineEmits<{ close: [] }>()
 const overlayRef = ref<HTMLDivElement | null>(null)
 const details = ref<TitleDetails | null>(null)
 const loadingExtras = ref(true)
+
+const watchOption = computed(() => {
+  if (!details.value) return null
+
+  for (const provider of details.value.providers) {
+    const app = matchStreamingApp(provider.name)
+    if (app) return { app, provider }
+  }
+
+  return null
+})
 
 async function loadExtras(): Promise<void> {
   loadingExtras.value = true
@@ -25,7 +38,11 @@ async function loadExtras(): Promise<void> {
 }
 
 function handleWatchClick(): void {
-  console.log('Abrir app de streaming ainda não implementado')
+  if (!watchOption.value) return
+
+  launchApp(watchOption.value.app.id, props.title.title).catch((error: unknown) => {
+    console.error(`Falha ao abrir ${watchOption.value?.app.name}:`, error)
+  })
 }
 
 function onKeydown(event: KeyboardEvent): void {
@@ -111,13 +128,8 @@ watch(() => props.title, loadExtras)
               <p class="attribution">Dados de "onde assistir" fornecidos por TMDB e JustWatch.</p>
             </div>
 
-            <button
-              v-if="details.providers.length"
-              type="button"
-              class="watch-button"
-              @click="handleWatchClick"
-            >
-              Assistir em {{ details.providers[0].name }}
+            <button v-if="watchOption" type="button" class="watch-button" @click="handleWatchClick">
+              Assistir em {{ watchOption.app.name }}
             </button>
           </template>
         </div>
