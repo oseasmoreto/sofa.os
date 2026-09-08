@@ -13,6 +13,11 @@ try {
   // .env é opcional em dev; chamadas ao TMDb falham com erro claro se o token faltar
 }
 
+// Necessário no MacBook Air 2017 (GPU integrada antiga): sem isso o processo
+// de GPU falha na inicialização (erro "eglQueryDeviceAttribEXT: bad attribute")
+// e a janela nunca chega a abrir.
+app.disableHardwareAcceleration()
+
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({

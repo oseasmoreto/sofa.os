@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { Star, X } from 'lucide-vue-next'
+import { Bookmark, BookmarkCheck, Star, X } from 'lucide-vue-next'
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import type { Title, TitleDetails, WatchProvider } from '../../../shared/types'
 import { matchStreamingApp, type StreamingApp } from '../../../shared/streamingApps'
 import { getTitleDetails } from '../api/tmdb'
 import { launchApp } from '../api/appLauncher'
+import { addToWatchlist, getWatchlist, removeFromWatchlist } from '../api/watchlist'
 import { pauseSpatialNavigation, resumeSpatialNavigation } from '../composables/spatialNav'
 
 const props = defineProps<{ title: Title }>()
@@ -39,6 +40,33 @@ function focusProvider(index: number): void {
 function launchProvider(app: StreamingApp): void {
   launchApp(app.id, props.title.title).catch((error: unknown) => {
     console.error(`Falha ao abrir ${app.name}:`, error)
+  })
+}
+
+const inWatchlist = ref(false)
+
+async function refreshWatchlistStatus(): Promise<void> {
+  try {
+    const list = await getWatchlist()
+    inWatchlist.value = list.some(
+      (item) => item.id === props.title.id && item.mediaType === props.title.mediaType
+    )
+  } catch {
+    inWatchlist.value = false
+  }
+}
+
+function toggleWatchlist(): void {
+  const wasInWatchlist = inWatchlist.value
+  inWatchlist.value = !wasInWatchlist
+
+  const action = wasInWatchlist
+    ? removeFromWatchlist(props.title.id, props.title.mediaType)
+    : addToWatchlist({ ...props.title })
+
+  action.catch((error: unknown) => {
+    inWatchlist.value = wasInWatchlist
+    console.error('Falha ao atualizar a lista:', error)
   })
 }
 
@@ -80,13 +108,20 @@ onMounted(() => {
   overlayRef.value?.focus()
   pauseSpatialNavigation()
   loadExtrasAndFocus()
+  refreshWatchlistStatus()
 })
 
 onUnmounted(() => {
   resumeSpatialNavigation()
 })
 
-watch(() => props.title, loadExtrasAndFocus)
+watch(
+  () => props.title,
+  () => {
+    loadExtrasAndFocus()
+    refreshWatchlistStatus()
+  }
+)
 </script>
 
 <template>
@@ -112,7 +147,23 @@ watch(() => props.title, loadExtrasAndFocus)
         <div v-else class="poster poster-fallback">{{ title.title }}</div>
 
         <div class="info">
-          <h1 class="title">{{ title.title }}</h1>
+          <div class="title-row">
+            <h1 class="title">{{ title.title }}</h1>
+            <button
+              type="button"
+              class="bookmark-button"
+              :class="{ active: inWatchlist }"
+              :aria-label="inWatchlist ? 'Remover da lista' : 'Adicionar à lista'"
+              :title="inWatchlist ? 'Remover da lista' : 'Adicionar à lista'"
+              @click="toggleWatchlist"
+            >
+              <component
+                :is="inWatchlist ? BookmarkCheck : Bookmark"
+                :size="20"
+                :stroke-width="2.2"
+              />
+            </button>
+          </div>
           <p class="meta">
             <span class="rating"
               ><Star :size="16" :stroke-width="2.5" /> {{ title.voteAverage.toFixed(1) }}</span
@@ -261,10 +312,42 @@ watch(() => props.title, loadExtrasAndFocus)
   gap: 16px;
 }
 
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
 .title {
   margin: 0;
   font-size: 32px;
   color: var(--ev-c-text-1);
+}
+
+.bookmark-button {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--ev-c-text-1);
+  cursor: pointer;
+  outline: none;
+  transition: background-color 150ms ease;
+}
+
+.bookmark-button:hover,
+.bookmark-button:focus-visible {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.bookmark-button.active {
+  background-color: #a60866;
+  color: #fff;
 }
 
 .meta {

@@ -7,6 +7,7 @@ interface Row {
 const rows: Row[] = []
 const position = reactive({ rowIndex: 0, colIndex: 0 })
 const enabled = ref(true)
+let leftEdgeHandler: (() => void) | null = null
 
 function focusCurrent(): void {
   const row = rows[position.rowIndex]
@@ -30,6 +31,10 @@ export function registerRow(getItems: () => HTMLElement[]): () => void {
   return () => {
     const index = rows.indexOf(row)
     if (index !== -1) rows.splice(index, 1)
+    if (position.rowIndex >= rows.length) {
+      position.rowIndex = Math.max(rows.length - 1, 0)
+      requestAnimationFrame(focusCurrent)
+    }
   }
 }
 
@@ -46,6 +51,14 @@ function moveCol(delta: number): void {
 
   const items = row.getItems()
   const nextIndex = Math.min(Math.max(position.colIndex + delta, 0), items.length - 1)
+
+  if (nextIndex === position.colIndex) {
+    if (delta < 0 && position.colIndex === 0 && leftEdgeHandler) {
+      leftEdgeHandler()
+    }
+    return
+  }
+
   position.colIndex = nextIndex
   focusCurrent()
 }
@@ -84,4 +97,12 @@ export function pauseSpatialNavigation(): void {
 
 export function resumeSpatialNavigation(): void {
   enabled.value = true
+}
+
+export function focusGrid(): void {
+  focusCurrent()
+}
+
+export function setLeftEdgeHandler(handler: (() => void) | null): void {
+  leftEdgeHandler = handler
 }

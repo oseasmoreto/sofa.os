@@ -65,7 +65,7 @@ onUnmounted(() => {
 
 .label {
   margin: 0;
-  padding: 0 64px;
+  padding: 0 48px 0 32px;
   font-size: 20px;
   font-weight: 700;
   color: var(--ev-c-text-1);
@@ -74,7 +74,7 @@ onUnmounted(() => {
 .row {
   display: flex;
   gap: 16px;
-  padding: 0 64px;
+  padding: 0 48px 0 32px;
   overflow-x: auto;
 }
 

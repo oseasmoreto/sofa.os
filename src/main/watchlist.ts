@@ -5,7 +5,9 @@ import type { MediaType, WatchlistItem } from '../shared/types'
 export function getWatchlist(): WatchlistItem[] {
   return getDb()
     .prepare(
-      `SELECT tmdb_id AS tmdbId, media_type AS mediaType, title, poster_path AS posterPath, added_at AS addedAt
+      `SELECT tmdb_id AS id, media_type AS mediaType, title, overview,
+              poster_path AS posterPath, backdrop_path AS backdropPath,
+              vote_average AS voteAverage, release_date AS releaseDate, added_at AS addedAt
        FROM watchlist
        ORDER BY added_at DESC`
     )
@@ -15,8 +17,8 @@ export function getWatchlist(): WatchlistItem[] {
 export function addToWatchlist(item: Omit<WatchlistItem, 'addedAt'>): void {
   getDb()
     .prepare(
-      `INSERT INTO watchlist (tmdb_id, media_type, title, poster_path, added_at)
-       VALUES (@tmdbId, @mediaType, @title, @posterPath, @addedAt)
+      `INSERT INTO watchlist (tmdb_id, media_type, title, overview, poster_path, backdrop_path, vote_average, release_date, added_at)
+       VALUES (@id, @mediaType, @title, @overview, @posterPath, @backdropPath, @voteAverage, @releaseDate, @addedAt)
        ON CONFLICT (tmdb_id, media_type) DO NOTHING`
     )
     .run({ ...item, addedAt: new Date().toISOString() })

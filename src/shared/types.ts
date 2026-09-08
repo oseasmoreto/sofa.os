@@ -1,13 +1,5 @@
 export type MediaType = 'movie' | 'tv'
 
-export interface WatchlistItem {
-  tmdbId: number
-  mediaType: MediaType
-  title: string
-  posterPath: string | null
-  addedAt: string
-}
-
 export interface Title {
   id: number
   mediaType: MediaType
@@ -17,6 +9,10 @@ export interface Title {
   backdropPath: string | null
   voteAverage: number
   releaseDate: string | null
+}
+
+export interface WatchlistItem extends Title {
+  addedAt: string
 }
 
 export interface CastMember {

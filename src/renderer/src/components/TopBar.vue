@@ -51,7 +51,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 20px;
-  padding: 28px 48px 0 64px;
+  padding: 28px 48px 0 32px;
 }
 
 .app-icon {
