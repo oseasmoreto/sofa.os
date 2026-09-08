@@ -1,5 +1,5 @@
 import { ElectronAPI } from '@electron-toolkit/preload'
-import type { MediaType, WatchlistItem } from '../shared/types'
+import type { MediaType, Title, TitleDetails, WatchlistItem } from '../shared/types'
 
 interface SofaApi {
   window: {
@@ -11,6 +11,12 @@ interface SofaApi {
     getWatchlist: () => Promise<WatchlistItem[]>
     addToWatchlist: (item: Omit<WatchlistItem, 'addedAt'>) => Promise<void>
     removeFromWatchlist: (tmdbId: number, mediaType: MediaType) => Promise<void>
+  }
+  tmdb: {
+    getTrending: () => Promise<Title[]>
+    getPopularMovies: () => Promise<Title[]>
+    getTopRatedMovies: () => Promise<Title[]>
+    getTitleDetails: (id: number, mediaType: MediaType) => Promise<TitleDetails>
   }
 }
 

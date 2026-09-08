@@ -25,10 +25,10 @@ Launcher fullscreen estilo "smart TV" para transformar um MacBook Air 2017 num h
    npm install
    ```
 
-2. Crie um arquivo `.env` na raiz com sua chave do TMDb:
+2. Crie um arquivo `.env` na raiz com seu Read Access Token do TMDb (veja `.env.example`):
 
    ```bash
-   TMDB_API_KEY=sua_chave_aqui
+   TMDB_READ_ACCESS_TOKEN=seu_token_aqui
    ```
 
 3. Rode em modo desenvolvimento:

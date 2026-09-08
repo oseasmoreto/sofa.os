@@ -4,6 +4,13 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { registerWindowControls } from './windowControls'
 import { registerWatchlistIpc } from './watchlist'
+import { registerTmdbIpc } from './services/tmdb'
+
+try {
+  process.loadEnvFile()
+} catch {
+  // .env é opcional em dev; chamadas ao TMDb falham com erro claro se o token faltar
+}
 
 function createWindow(): void {
   // Create the browser window.
@@ -56,6 +63,7 @@ app.whenReady().then(() => {
 
   registerWindowControls()
   registerWatchlistIpc()
+  registerTmdbIpc()
 
   createWindow()
 

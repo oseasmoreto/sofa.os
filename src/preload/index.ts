@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
-import type { MediaType, WatchlistItem } from '../shared/types'
+import type { MediaType, Title, TitleDetails, WatchlistItem } from '../shared/types'
 
 // Custom APIs for renderer
 const api = {
@@ -15,6 +15,13 @@ const api = {
       ipcRenderer.invoke('db:addToWatchlist', item),
     removeFromWatchlist: (tmdbId: number, mediaType: MediaType): Promise<void> =>
       ipcRenderer.invoke('db:removeFromWatchlist', tmdbId, mediaType)
+  },
+  tmdb: {
+    getTrending: (): Promise<Title[]> => ipcRenderer.invoke('tmdb:getTrending'),
+    getPopularMovies: (): Promise<Title[]> => ipcRenderer.invoke('tmdb:getPopularMovies'),
+    getTopRatedMovies: (): Promise<Title[]> => ipcRenderer.invoke('tmdb:getTopRatedMovies'),
+    getTitleDetails: (id: number, mediaType: MediaType): Promise<TitleDetails> =>
+      ipcRenderer.invoke('tmdb:getTitleDetails', id, mediaType)
   }
 }
 
