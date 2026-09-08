@@ -84,9 +84,11 @@ function toTitle(raw: TmdbResult, fallbackMediaType: MediaType): Title {
   }
 }
 
+const CAROUSEL_SIZE = 12
+
 export async function getTrending(): Promise<Title[]> {
   const data = await request<TmdbListResponse>('/trending/all/week')
-  return data.results.map((raw) => toTitle(raw, 'movie'))
+  return data.results.slice(0, CAROUSEL_SIZE).map((raw) => toTitle(raw, 'movie'))
 }
 
 export async function getPopularMovies(): Promise<Title[]> {
@@ -95,7 +97,7 @@ export async function getPopularMovies(): Promise<Title[]> {
     watch_region: 'BR',
     region: 'BR'
   })
-  return data.results.map((raw) => toTitle(raw, 'movie'))
+  return data.results.slice(0, CAROUSEL_SIZE).map((raw) => toTitle(raw, 'movie'))
 }
 
 export async function getTopRatedMovies(): Promise<Title[]> {
@@ -105,7 +107,7 @@ export async function getTopRatedMovies(): Promise<Title[]> {
     watch_region: 'BR',
     region: 'BR'
   })
-  return data.results.map((raw) => toTitle(raw, 'movie'))
+  return data.results.slice(0, CAROUSEL_SIZE).map((raw) => toTitle(raw, 'movie'))
 }
 
 function dedupeProviders(providers: TmdbProvider[]): WatchProvider[] {
