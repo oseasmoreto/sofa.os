@@ -3,6 +3,7 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { registerWindowControls } from './windowControls'
+import { registerWatchlistIpc } from './watchlist'
 
 function createWindow(): void {
   // Create the browser window.
@@ -54,6 +55,7 @@ app.whenReady().then(() => {
   })
 
   registerWindowControls()
+  registerWatchlistIpc()
 
   createWindow()
 
