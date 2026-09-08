@@ -13,10 +13,14 @@ try {
   // .env é opcional em dev; chamadas ao TMDb falham com erro claro se o token faltar
 }
 
-// Necessário no MacBook Air 2017 (GPU integrada antiga): sem isso o processo
-// de GPU falha na inicialização (erro "eglQueryDeviceAttribEXT: bad attribute")
-// e a janela nunca chega a abrir.
-app.disableHardwareAcceleration()
+// Necessário no MacBook Air 2017 (GPU Intel integrada antiga): o backend OpenGL
+// padrão do ANGLE falha na inicialização nessa GPU ("eglQueryDeviceAttribEXT: bad
+// attribute") e a janela nunca abre. Forçar o backend Metal evita esse caminho
+// quebrado sem desligar a aceleração de GPU por completo (o que causava
+// corrupção visual nas imagens ao renderizar tudo via software).
+if (process.platform === 'darwin') {
+  app.commandLine.appendSwitch('use-angle', 'metal')
+}
 
 function createWindow(): void {
   // Create the browser window.
