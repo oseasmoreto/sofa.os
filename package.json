@@ -1,6 +1,6 @@
 {
   "name": "sofa.os",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "description": "Launcher fullscreen estilo smart TV para streaming, com descoberta via TMDb",
   "main": "./out/main/index.js",
   "author": "moretoob@gmail.com",
