@@ -6,6 +6,8 @@ export interface StreamingApp {
   name: string
   color: string
   initials: string
+  icon?: string
+  iconFit?: 'contain' | 'cover'
   launch: LaunchStrategy
 }
 
@@ -13,8 +15,9 @@ export const streamingApps: StreamingApp[] = [
   {
     id: 'netflix',
     name: 'Netflix',
-    color: '#E50914',
+    color: '#000000',
     initials: 'N',
+    icon: '/streaming-icons/netflix.svg',
     launch: {
       type: 'browser',
       homeUrl: 'https://www.netflix.com',
@@ -24,8 +27,10 @@ export const streamingApps: StreamingApp[] = [
   {
     id: 'disneyplus',
     name: 'Disney+',
-    color: '#0E1E58',
+    color: '#1A1D29',
     initials: 'D+',
+    icon: '/streaming-icons/disneyplus.svg',
+    iconFit: 'cover',
     launch: {
       type: 'browser',
       homeUrl: 'https://www.disneyplus.com',
@@ -35,8 +40,9 @@ export const streamingApps: StreamingApp[] = [
   {
     id: 'primevideo',
     name: 'Prime Video',
-    color: '#00A8E1',
+    color: '#0F1720',
     initials: 'PV',
+    icon: '/streaming-icons/primevideo.svg',
     launch: {
       type: 'browser',
       homeUrl: 'https://www.primevideo.com',
@@ -48,6 +54,7 @@ export const streamingApps: StreamingApp[] = [
     name: 'Apple TV+',
     color: '#000000',
     initials: 'tv',
+    icon: '/streaming-icons/appletv.svg',
     launch: {
       type: 'browser',
       homeUrl: 'https://tv.apple.com',
@@ -57,8 +64,9 @@ export const streamingApps: StreamingApp[] = [
   {
     id: 'crunchyroll',
     name: 'Crunchyroll',
-    color: '#F47521',
+    color: '#1F1F1F',
     initials: 'CR',
+    icon: '/streaming-icons/crunchyroll.svg',
     launch: {
       type: 'browser',
       homeUrl: 'https://www.crunchyroll.com',
@@ -70,6 +78,7 @@ export const streamingApps: StreamingApp[] = [
     name: 'HBO Max',
     color: '#5822B4',
     initials: 'Max',
+    icon: '/streaming-icons/hbomax.svg',
     launch: {
       type: 'browser',
       homeUrl: 'https://www.hbomax.com',
@@ -81,6 +90,8 @@ export const streamingApps: StreamingApp[] = [
     name: 'Globoplay',
     color: '#E60014',
     initials: 'GP',
+    icon: '/streaming-icons/globoplay.png',
+    iconFit: 'cover',
     launch: {
       type: 'browser',
       homeUrl: 'https://globoplay.globo.com',

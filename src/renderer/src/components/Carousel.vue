@@ -1,15 +1,16 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
+import { nextTick, ref, watch } from 'vue'
 import type { Title } from '../../../shared/types'
 import { useSelection } from '../composables/selection'
-import { registerRow } from '../composables/spatialNav'
+import { useEmblaRow } from '../composables/useEmblaRow'
 
-defineProps<{
+const props = defineProps<{
   label: string
   items: Title[]
 }>()
 
-const emit = defineEmits<{ loadMore: [] }>()
+const emit = defineEmits<{ loadMore: []; itemFocus: [Title] }>()
 
 const { select } = useSelection()
 const posterBase = 'https://image.tmdb.org/t/p/w300'
@@ -20,49 +21,78 @@ function setCardRef(el: Element | null, index: number): void {
   if (el instanceof HTMLElement) cardRefs.value[index] = el
 }
 
-const SCROLL_THRESHOLD = 400
+const { emblaRef, canScrollPrev, canScrollNext, scrollPrev, scrollNext, reInit } = useEmblaRow(
+  { align: 'start', containScroll: 'trimSnaps', dragFree: true },
+  cardRefs,
+  () => emit('loadMore')
+)
 
-function onScroll(event: Event): void {
-  const el = event.target as HTMLDivElement
-  if (el.scrollWidth - el.scrollLeft - el.clientWidth < SCROLL_THRESHOLD) {
-    emit('loadMore')
-  }
+function setEmblaRef(el: Element | null): void {
+  emblaRef.value = (el as HTMLElement) ?? undefined
 }
 
-let unregister: (() => void) | null = null
-
-onMounted(() => {
-  unregister = registerRow(() => cardRefs.value)
-})
-
-onUnmounted(() => {
-  unregister?.()
-})
+watch(
+  () => props.items.length,
+  async () => {
+    await nextTick()
+    reInit()
+  }
+)
 </script>
 
 <template>
   <section class="carousel">
     <h2 v-if="label" class="label">{{ label }}</h2>
-    <div class="row" @scroll="onScroll">
-      <div
-        v-for="(item, index) in items"
-        :key="`${item.mediaType}-${item.id}`"
-        :ref="(el) => setCardRef(el as Element | null, index)"
-        class="card"
-        role="button"
-        tabindex="0"
-        @click="select(item)"
-        @keydown.enter="select(item)"
+    <div class="carousel-wrapper">
+      <button
+        v-if="canScrollPrev"
+        type="button"
+        class="nav-arrow nav-arrow-prev"
+        aria-label="Anterior"
+        @click="scrollPrev"
       >
-        <img
-          v-if="item.posterPath"
-          class="poster"
-          :src="`${posterBase}${item.posterPath}`"
-          :alt="item.title"
-          loading="lazy"
-        />
-        <div v-else class="poster poster-fallback">{{ item.title }}</div>
+        <ChevronLeft :size="24" />
+      </button>
+
+      <div :ref="(el) => setEmblaRef(el as Element | null)" class="embla-viewport">
+        <div class="embla-container">
+          <div
+            v-for="(item, index) in items"
+            :key="`${item.mediaType}-${item.id}`"
+            class="embla-slide"
+          >
+            <div
+              :ref="(el) => setCardRef(el as Element | null, index)"
+              class="card"
+              role="button"
+              tabindex="0"
+              @click="select(item)"
+              @keydown.enter="select(item)"
+              @focus="emit('itemFocus', item)"
+              @mouseenter="emit('itemFocus', item)"
+            >
+              <img
+                v-if="item.posterPath"
+                class="poster"
+                :src="`${posterBase}${item.posterPath}`"
+                :alt="item.title"
+                loading="lazy"
+              />
+              <div v-else class="poster poster-fallback">{{ item.title }}</div>
+            </div>
+          </div>
+        </div>
       </div>
+
+      <button
+        v-if="canScrollNext"
+        type="button"
+        class="nav-arrow nav-arrow-next"
+        aria-label="Próximo"
+        @click="scrollNext"
+      >
+        <ChevronRight :size="24" />
+      </button>
     </div>
   </section>
 </template>
@@ -82,11 +112,24 @@ onUnmounted(() => {
   color: var(--ev-c-text-1);
 }
 
-.row {
+.carousel-wrapper {
+  position: relative;
+}
+
+.embla-viewport {
+  overflow: hidden;
+  padding: 14px 48px 14px 32px;
+  margin: -14px 0;
+}
+
+.embla-container {
   display: flex;
   gap: 16px;
-  padding: 0 48px 0 32px;
-  overflow-x: auto;
+}
+
+.embla-slide {
+  flex: 0 0 auto;
+  min-width: 0;
 }
 
 .card {
@@ -124,5 +167,35 @@ onUnmounted(() => {
   padding: 8px;
   font-size: 13px;
   color: var(--ev-c-text-2);
+}
+
+.nav-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.nav-arrow:hover {
+  background-color: rgba(0, 0, 0, 0.85);
+}
+
+.nav-arrow-prev {
+  left: 8px;
+}
+
+.nav-arrow-next {
+  right: 8px;
 }
 </style>

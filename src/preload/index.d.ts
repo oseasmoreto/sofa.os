@@ -24,6 +24,7 @@ interface SofaApi {
     getMoviesByGenre: (genreId: number, page?: number) => Promise<TitlePage>
     getTvByGenre: (genreId: number, page?: number) => Promise<TitlePage>
     getTitleDetails: (id: number, mediaType: MediaType) => Promise<TitleDetails>
+    searchMulti: (query: string, page?: number) => Promise<TitlePage>
   }
   app: {
     launch: (appId: string, query?: string) => Promise<void>

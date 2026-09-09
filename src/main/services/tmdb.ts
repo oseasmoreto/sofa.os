@@ -184,6 +184,26 @@ export async function getTvByGenre(genreId: number, page = 1): Promise<TitlePage
   return toTitlePage(data, 'tv')
 }
 
+export async function searchMulti(query: string, page = 1): Promise<TitlePage> {
+  if (!query.trim()) {
+    return { items: [], hasMore: false }
+  }
+
+  const data = await request<TmdbListResponse>('/search/multi', {
+    query,
+    page: String(page)
+  })
+
+  const items = data.results
+    .filter((raw) => raw.media_type === 'movie' || raw.media_type === 'tv')
+    .map((raw) => toTitle(raw, raw.media_type as MediaType))
+
+  return {
+    items,
+    hasMore: data.page < data.total_pages
+  }
+}
+
 function dedupeProviders(providers: TmdbProvider[]): WatchProvider[] {
   const byId = new Map<number, TmdbProvider>()
   for (const provider of providers) {
@@ -237,5 +257,8 @@ export function registerTmdbIpc(): void {
   )
   ipcMain.handle('tmdb:getTitleDetails', (_event, id: number, mediaType: MediaType) =>
     getTitleDetails(id, mediaType)
+  )
+  ipcMain.handle('tmdb:searchMulti', (_event, query: string, page?: number) =>
+    searchMulti(query, page)
   )
 }

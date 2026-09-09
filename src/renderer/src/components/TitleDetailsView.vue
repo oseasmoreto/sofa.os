@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { Bookmark, BookmarkCheck, Star, X } from 'lucide-vue-next'
+import emblaCarouselVue from 'embla-carousel-vue'
+import { Bookmark, BookmarkCheck, ChevronLeft, ChevronRight, Star, X } from 'lucide-vue-next'
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import type { Title, TitleDetails, WatchProvider } from '../../../shared/types'
 import { matchStreamingApp, type StreamingApp } from '../../../shared/streamingApps'
@@ -43,6 +44,31 @@ function launchProvider(app: StreamingApp): void {
   })
 }
 
+const [castEmblaRef, castEmblaApi] = emblaCarouselVue({
+  align: 'start',
+  containScroll: 'trimSnaps',
+  dragFree: true
+})
+const castCanScrollPrev = ref(false)
+const castCanScrollNext = ref(false)
+
+function setCastEmblaRef(el: Element | null): void {
+  castEmblaRef.value = (el as HTMLElement) ?? undefined
+}
+
+function updateCastScrollState(): void {
+  castCanScrollPrev.value = castEmblaApi.value?.canScrollPrev() ?? false
+  castCanScrollNext.value = castEmblaApi.value?.canScrollNext() ?? false
+}
+
+function castScrollPrev(): void {
+  castEmblaApi.value?.scrollPrev()
+}
+
+function castScrollNext(): void {
+  castEmblaApi.value?.scrollNext()
+}
+
 const inWatchlist = ref(false)
 
 async function refreshWatchlistStatus(): Promise<void> {
@@ -82,6 +108,9 @@ async function loadExtrasAndFocus(): Promise<void> {
   }
 
   await nextTick()
+  castEmblaApi.value?.reInit()
+  updateCastScrollState()
+
   if (actionableProviders.value.length) {
     focusProvider(0)
   }
@@ -109,6 +138,12 @@ onMounted(() => {
   pauseSpatialNavigation()
   loadExtrasAndFocus()
   refreshWatchlistStatus()
+
+  const api = castEmblaApi.value
+  if (api) {
+    api.on('select', updateCastScrollState)
+    api.on('reInit', updateCastScrollState)
+  }
 })
 
 onUnmounted(() => {
@@ -173,63 +208,84 @@ watch(
           <p class="overview">{{ title.overview || 'Sem sinopse disponível.' }}</p>
 
           <p v-if="loadingExtras" class="empty">Carregando elenco e streamings…</p>
-          <template v-else-if="details">
-            <div v-if="details.cast.length" class="section">
-              <h2 class="section-label">Elenco</h2>
-              <div class="cast-row">
-                <div v-for="member in details.cast" :key="member.id" class="cast-member">
-                  <img
-                    v-if="member.profilePath"
-                    class="cast-photo"
-                    :src="`https://image.tmdb.org/t/p/w185${member.profilePath}`"
-                    :alt="member.name"
-                  />
-                  <div v-else class="cast-photo cast-photo-fallback" />
-                  <span class="cast-name">{{ member.name }}</span>
+
+          <div v-show="!loadingExtras && (details?.cast.length ?? 0) > 0" class="section">
+            <h2 class="section-label">Elenco</h2>
+            <div class="cast-wrapper">
+              <button
+                v-if="castCanScrollPrev"
+                type="button"
+                class="cast-nav-arrow cast-nav-arrow-prev"
+                aria-label="Anterior"
+                @click="castScrollPrev"
+              >
+                <ChevronLeft :size="16" />
+              </button>
+
+              <div :ref="(el) => setCastEmblaRef(el as Element | null)" class="cast-viewport">
+                <div class="cast-container">
+                  <div v-for="member in details?.cast ?? []" :key="member.id" class="cast-member">
+                    <img
+                      v-if="member.profilePath"
+                      class="cast-photo"
+                      :src="`https://image.tmdb.org/t/p/w185${member.profilePath}`"
+                      :alt="member.name"
+                    />
+                    <div v-else class="cast-photo cast-photo-fallback" />
+                    <span class="cast-name">{{ member.name }}</span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div class="section">
-              <h2 class="section-label">Onde assistir</h2>
-              <div v-if="details.providers.length" class="providers-row">
-                <template v-for="provider in details.providers" :key="provider.id">
-                  <button
-                    v-if="matchStreamingApp(provider.name)"
-                    :ref="
-                      (el) =>
-                        setProviderRef(
-                          el as Element | null,
-                          actionableProviders.findIndex(
-                            (entry) => entry.provider.id === provider.id
-                          )
-                        )
-                    "
-                    type="button"
-                    class="provider-button"
-                    :title="`Assistir em ${provider.name}`"
-                    @click="launchProvider(matchStreamingApp(provider.name)!)"
-                    @keydown.enter="launchProvider(matchStreamingApp(provider.name)!)"
-                  >
-                    <img
-                      class="provider-logo"
-                      :src="`https://image.tmdb.org/t/p/w92${provider.logoPath}`"
-                      :alt="provider.name"
-                    />
-                  </button>
+              <button
+                v-if="castCanScrollNext"
+                type="button"
+                class="cast-nav-arrow cast-nav-arrow-next"
+                aria-label="Próximo"
+                @click="castScrollNext"
+              >
+                <ChevronRight :size="16" />
+              </button>
+            </div>
+          </div>
+
+          <div v-show="!loadingExtras && details" class="section">
+            <h2 class="section-label">Onde assistir</h2>
+            <div v-if="details && details.providers.length" class="providers-row">
+              <template v-for="provider in details.providers" :key="provider.id">
+                <button
+                  v-if="matchStreamingApp(provider.name)"
+                  :ref="
+                    (el) =>
+                      setProviderRef(
+                        el as Element | null,
+                        actionableProviders.findIndex((entry) => entry.provider.id === provider.id)
+                      )
+                  "
+                  type="button"
+                  class="provider-button"
+                  :title="`Assistir em ${provider.name}`"
+                  @click="launchProvider(matchStreamingApp(provider.name)!)"
+                  @keydown.enter="launchProvider(matchStreamingApp(provider.name)!)"
+                >
                   <img
-                    v-else
-                    class="provider-logo provider-logo-disabled"
+                    class="provider-logo"
                     :src="`https://image.tmdb.org/t/p/w92${provider.logoPath}`"
                     :alt="provider.name"
-                    :title="`${provider.name} (abertura não suportada ainda)`"
                   />
-                </template>
-              </div>
-              <p v-else class="empty">Não disponível em streaming no Brasil no momento.</p>
-              <p class="attribution">Dados de "onde assistir" fornecidos por TMDB e JustWatch.</p>
+                </button>
+                <img
+                  v-else
+                  class="provider-logo provider-logo-disabled"
+                  :src="`https://image.tmdb.org/t/p/w92${provider.logoPath}`"
+                  :alt="provider.name"
+                  :title="`${provider.name} (abertura não suportada ainda)`"
+                />
+              </template>
             </div>
-          </template>
+            <p v-else class="empty">Não disponível em streaming no Brasil no momento.</p>
+            <p class="attribution">Dados de "onde assistir" fornecidos por TMDB e JustWatch.</p>
+          </div>
         </div>
       </div>
     </div>
@@ -386,11 +442,43 @@ watch(
   color: var(--ev-c-text-1);
 }
 
-.cast-row {
+.cast-wrapper {
+  position: relative;
+}
+
+.cast-viewport {
+  overflow: hidden;
+  padding-bottom: 4px;
+}
+
+.cast-container {
   display: flex;
   gap: 16px;
-  overflow-x: auto;
-  padding-bottom: 4px;
+}
+
+.cast-nav-arrow {
+  position: absolute;
+  top: 0;
+  bottom: 4px;
+  z-index: 2;
+  width: 28px;
+  border: none;
+  background: linear-gradient(to right, var(--ev-c-black-soft) 40%, transparent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  cursor: pointer;
+}
+
+.cast-nav-arrow-prev {
+  left: 0;
+}
+
+.cast-nav-arrow-next {
+  right: 0;
+  justify-content: flex-end;
+  background: linear-gradient(to left, var(--ev-c-black-soft) 40%, transparent);
 }
 
 .cast-member {

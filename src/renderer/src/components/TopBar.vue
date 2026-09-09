@@ -41,7 +41,14 @@ onUnmounted(() => {
       @click="open(app.id)"
       @keydown.enter="open(app.id)"
     >
-      <span class="app-icon-label">{{ app.initials }}</span>
+      <img
+        v-if="app.icon"
+        :src="app.icon"
+        :alt="app.name"
+        class="app-icon-logo"
+        :class="{ 'app-icon-logo--cover': app.iconFit === 'cover' }"
+      />
+      <span v-else class="app-icon-label">{{ app.initials }}</span>
     </div>
   </nav>
 </template>
@@ -81,5 +88,20 @@ onUnmounted(() => {
   font-weight: 700;
   font-size: 20px;
   letter-spacing: -0.5px;
+}
+
+.app-icon-logo {
+  width: 60%;
+  height: 60%;
+  object-fit: contain;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+.app-icon-logo--cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 16px;
 }
 </style>

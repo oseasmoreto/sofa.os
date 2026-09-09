@@ -38,7 +38,9 @@ const api = {
     getTvByGenre: (genreId: number, page?: number): Promise<TitlePage> =>
       ipcRenderer.invoke('tmdb:getTvByGenre', genreId, page),
     getTitleDetails: (id: number, mediaType: MediaType): Promise<TitleDetails> =>
-      ipcRenderer.invoke('tmdb:getTitleDetails', id, mediaType)
+      ipcRenderer.invoke('tmdb:getTitleDetails', id, mediaType),
+    searchMulti: (query: string, page?: number): Promise<TitlePage> =>
+      ipcRenderer.invoke('tmdb:searchMulti', query, page)
   },
   app: {
     launch: (appId: string, query?: string): Promise<void> =>

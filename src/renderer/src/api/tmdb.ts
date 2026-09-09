@@ -43,3 +43,7 @@ export function getTvByGenre(genreId: number, page?: number): Promise<TitlePage>
 export function getTitleDetails(id: number, mediaType: MediaType): Promise<TitleDetails> {
   return window.api.tmdb.getTitleDetails(id, mediaType)
 }
+
+export function searchMulti(query: string, page?: number): Promise<TitlePage> {
+  return window.api.tmdb.searchMulti(query, page)
+}

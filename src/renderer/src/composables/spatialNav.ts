@@ -2,6 +2,7 @@ import { onMounted, onUnmounted, reactive, ref } from 'vue'
 
 interface Row {
   getItems: () => HTMLElement[]
+  onFocusIndex?: (index: number) => void
 }
 
 const rows: Row[] = []
@@ -18,10 +19,14 @@ function focusCurrent(): void {
 
   const col = Math.min(position.colIndex, items.length - 1)
   items[col]?.focus()
+  row.onFocusIndex?.(col)
 }
 
-export function registerRow(getItems: () => HTMLElement[]): () => void {
-  const row: Row = { getItems }
+export function registerRow(
+  getItems: () => HTMLElement[],
+  onFocusIndex?: (index: number) => void
+): () => void {
+  const row: Row = { getItems, onFocusIndex }
   rows.push(row)
 
   if (rows.length === 1) {

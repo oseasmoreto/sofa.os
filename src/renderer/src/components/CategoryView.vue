@@ -7,6 +7,8 @@ const props = defineProps<{
   rows: { label: string; fetch: (page: number) => Promise<TitlePage> }[]
 }>()
 
+const emit = defineEmits<{ itemFocus: [Title] }>()
+
 interface RowState {
   items: Title[]
   page: number
@@ -62,6 +64,7 @@ onMounted(async () => {
         :label="row.label"
         :items="rowStates[index].items"
         @load-more="loadMore(index)"
+        @item-focus="emit('itemFocus', $event)"
       />
     </template>
   </div>
