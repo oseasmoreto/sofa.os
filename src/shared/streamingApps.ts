@@ -9,6 +9,10 @@ export interface StreamingApp {
   icon?: string
   iconFit?: 'contain' | 'cover'
   launch: LaunchStrategy
+  // id do serviço na Streaming Availability API (movieofthenight.com), usado
+  // pra cruzar com o link direto do título. Omitido quando o serviço não é
+  // coberto por ela (ex: Globoplay) — nesse caso cai de volta pra busca.
+  deepLinkServiceId?: string
 }
 
 export const streamingApps: StreamingApp[] = [
@@ -22,7 +26,8 @@ export const streamingApps: StreamingApp[] = [
       type: 'browser',
       homeUrl: 'https://www.netflix.com',
       searchUrl: 'https://www.netflix.com/search?q={query}'
-    }
+    },
+    deepLinkServiceId: 'netflix'
   },
   {
     id: 'disneyplus',
@@ -35,7 +40,8 @@ export const streamingApps: StreamingApp[] = [
       type: 'browser',
       homeUrl: 'https://www.disneyplus.com',
       searchUrl: 'https://www.disneyplus.com/search?q={query}'
-    }
+    },
+    deepLinkServiceId: 'disney'
   },
   {
     id: 'primevideo',
@@ -47,7 +53,8 @@ export const streamingApps: StreamingApp[] = [
       type: 'browser',
       homeUrl: 'https://www.primevideo.com',
       searchUrl: 'https://www.primevideo.com/search?phrase={query}'
-    }
+    },
+    deepLinkServiceId: 'prime'
   },
   {
     id: 'appletv',
@@ -59,7 +66,8 @@ export const streamingApps: StreamingApp[] = [
       type: 'browser',
       homeUrl: 'https://tv.apple.com',
       searchUrl: 'https://tv.apple.com/search?term={query}'
-    }
+    },
+    deepLinkServiceId: 'apple'
   },
   {
     id: 'crunchyroll',
@@ -71,7 +79,8 @@ export const streamingApps: StreamingApp[] = [
       type: 'browser',
       homeUrl: 'https://www.crunchyroll.com',
       searchUrl: 'https://www.crunchyroll.com/search?q={query}'
-    }
+    },
+    deepLinkServiceId: 'crunchyroll'
   },
   {
     id: 'hbomax',
@@ -83,7 +92,8 @@ export const streamingApps: StreamingApp[] = [
       type: 'browser',
       homeUrl: 'https://www.hbomax.com',
       searchUrl: 'https://www.hbomax.com/search?q={query}'
-    }
+    },
+    deepLinkServiceId: 'hbo'
   },
   {
     id: 'globoplay',

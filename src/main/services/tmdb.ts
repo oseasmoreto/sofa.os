@@ -7,6 +7,8 @@ import type {
   TitlePage,
   WatchProvider
 } from '../../shared/types'
+import { matchStreamingApp } from '../../shared/streamingApps'
+import { getDeepLinks } from './streamingAvailability'
 
 const BASE_URL = 'https://api.themoviedb.org/3'
 
@@ -290,7 +292,19 @@ export async function getTitleDetails(id: number, mediaType: MediaType): Promise
   const region = data['watch/providers']?.results.BR
   const providers = dedupeProviders(collectProviders(region))
 
-  return { ...toTitle(data, mediaType), cast, providers, availableInBR: providers.length > 0 }
+  const deepLinks = await getDeepLinks(id, mediaType)
+  const providersWithLinks = providers.map((provider) => {
+    const serviceId = matchStreamingApp(provider.name)?.deepLinkServiceId
+    const deepLink = serviceId ? deepLinks[serviceId] : undefined
+    return deepLink ? { ...provider, deepLink } : provider
+  })
+
+  return {
+    ...toTitle(data, mediaType),
+    cast,
+    providers: providersWithLinks,
+    availableInBR: providers.length > 0
+  }
 }
 
 export function registerTmdbIpc(): void {

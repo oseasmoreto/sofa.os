@@ -10,9 +10,13 @@ export interface LaunchPlan {
   target: string
 }
 
-export function buildLaunchPlan(app: StreamingApp, query?: string): LaunchPlan {
+export function buildLaunchPlan(app: StreamingApp, query?: string, directUrl?: string): LaunchPlan {
   if (app.launch.type === 'native') {
     return { kind: 'native', target: app.launch.appName }
+  }
+
+  if (directUrl) {
+    return { kind: 'browser', target: directUrl }
   }
 
   const url = query
@@ -72,15 +76,17 @@ async function executeLaunchPlan(plan: LaunchPlan): Promise<void> {
   }
 }
 
-export async function launchApp(appId: string, query?: string): Promise<void> {
+export async function launchApp(appId: string, query?: string, directUrl?: string): Promise<void> {
   const app = streamingApps.find((candidate) => candidate.id === appId)
   if (!app) {
     throw new Error(`App de streaming desconhecido: ${appId}`)
   }
 
-  await executeLaunchPlan(buildLaunchPlan(app, query))
+  await executeLaunchPlan(buildLaunchPlan(app, query, directUrl))
 }
 
 export function registerAppLauncherIpc(): void {
-  ipcMain.handle('app:launch', (_event, appId: string, query?: string) => launchApp(appId, query))
+  ipcMain.handle('app:launch', (_event, appId: string, query?: string, directUrl?: string) =>
+    launchApp(appId, query, directUrl)
+  )
 }

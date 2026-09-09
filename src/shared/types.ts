@@ -27,6 +27,7 @@ export interface WatchProvider {
   id: number
   name: string
   logoPath: string
+  deepLink?: string
 }
 
 export interface TitleDetails extends Title {

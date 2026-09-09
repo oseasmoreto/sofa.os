@@ -33,7 +33,7 @@ interface SofaApi {
     searchMulti: (query: string, page?: number) => Promise<TitlePage>
   }
   app: {
-    launch: (appId: string, query?: string) => Promise<void>
+    launch: (appId: string, query?: string, directUrl?: string) => Promise<void>
   }
   updater: {
     check: () => Promise<void>

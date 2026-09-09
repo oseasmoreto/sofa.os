@@ -20,6 +20,18 @@ function migrate(database: Database.Database): void {
     )
   `)
 
+  // Cache dos deep links da Streaming Availability API — o plano gratuito
+  // tem só 1000 requisições/mês, então evitamos re-consultar o mesmo título.
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS deep_link_cache (
+      tmdb_id INTEGER NOT NULL,
+      media_type TEXT NOT NULL CHECK (media_type IN ('movie', 'tv')),
+      links_json TEXT NOT NULL,
+      fetched_at TEXT NOT NULL,
+      PRIMARY KEY (tmdb_id, media_type)
+    )
+  `)
+
   const existingColumns = new Set(
     (database.pragma('table_info(watchlist)') as { name: string }[]).map((column) => column.name)
   )

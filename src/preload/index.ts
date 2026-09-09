@@ -49,8 +49,8 @@ const api = {
       ipcRenderer.invoke('tmdb:searchMulti', query, page)
   },
   app: {
-    launch: (appId: string, query?: string): Promise<void> =>
-      ipcRenderer.invoke('app:launch', appId, query)
+    launch: (appId: string, query?: string, directUrl?: string): Promise<void> =>
+      ipcRenderer.invoke('app:launch', appId, query, directUrl)
   },
   updater: {
     check: (): Promise<void> => ipcRenderer.invoke('updater:check'),

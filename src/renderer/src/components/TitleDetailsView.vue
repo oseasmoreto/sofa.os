@@ -38,8 +38,9 @@ function focusProvider(index: number): void {
   providerRefs.value[clamped]?.focus()
 }
 
-function launchProvider(app: StreamingApp): void {
-  launchApp(app.id, props.title.title).catch((error: unknown) => {
+function launchProvider(app: StreamingApp, provider: WatchProvider): void {
+  const query = provider.deepLink ? undefined : props.title.title
+  launchApp(app.id, query, provider.deepLink).catch((error: unknown) => {
     console.error(`Falha ao abrir ${app.name}:`, error)
   })
 }
@@ -265,7 +266,7 @@ watch(
                   type="button"
                   class="provider-button"
                   :title="`Assistir em ${provider.name}`"
-                  @click="launchProvider(matchStreamingApp(provider.name)!)"
+                  @click="launchProvider(matchStreamingApp(provider.name)!, provider)"
                 >
                   <img
                     class="provider-logo"

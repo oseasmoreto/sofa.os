@@ -56,16 +56,18 @@ function nextSlide(): void {
   startRotation()
 }
 
-const watchOption = computed(() => {
+const watchMatch = computed(() => {
   if (!heroDetails.value) return null
 
   for (const provider of heroDetails.value.providers) {
     const app = matchStreamingApp(provider.name)
-    if (app) return app
+    if (app) return { app, provider }
   }
 
   return null
 })
+
+const watchOption = computed(() => watchMatch.value?.app ?? null)
 
 const showSlideNav = computed(() => !isControlled.value && slides.value.length > 1)
 
@@ -153,9 +155,11 @@ onUnmounted(() => {
 })
 
 function watchNow(): void {
-  if (!hero.value || !watchOption.value) return
-  launchApp(watchOption.value.id, hero.value.title).catch((error: unknown) => {
-    console.error(`Falha ao abrir ${watchOption.value?.name}:`, error)
+  if (!hero.value || !watchMatch.value) return
+  const { app, provider } = watchMatch.value
+  const query = provider.deepLink ? undefined : hero.value.title
+  launchApp(app.id, query, provider.deepLink).catch((error: unknown) => {
+    console.error(`Falha ao abrir ${app.name}:`, error)
   })
 }
 
