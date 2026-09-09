@@ -8,10 +8,20 @@ import { registerTmdbIpc } from './services/tmdb'
 import { registerAppLauncherIpc } from './appLauncher'
 import { registerUpdaterIpc } from './updater'
 
+// O .env fica de fora do pacote de propósito (senão as chaves da API iriam
+// pro DMG publicado no GitHub Release, que é público). No app empacotado,
+// process.cwd() não é a pasta do projeto, então carregamos de um local fixo
+// fora do bundle — o mesmo diretório onde já fica o banco SQLite. Em dev
+// (npm run dev), esse arquivo não existe ainda, então cai no fallback e lê
+// o .env normal da raiz do projeto, como sempre.
 try {
-  process.loadEnvFile()
+  process.loadEnvFile(join(app.getPath('userData'), '.env'))
 } catch {
-  // .env é opcional em dev; chamadas ao TMDb falham com erro claro se o token faltar
+  try {
+    process.loadEnvFile()
+  } catch {
+    // .env é opcional; chamadas às APIs externas falham com erro claro se as chaves faltarem
+  }
 }
 
 // Necessário no MacBook Air 2017 (GPU Intel integrada antiga): o backend OpenGL
