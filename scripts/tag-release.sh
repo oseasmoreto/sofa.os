@@ -1,8 +1,16 @@
 #!/bin/sh
-# electron-builder com releaseType: release (ver electron-builder.yml) exige
-# que a tag já exista de verdade no GitHub antes de publicar — só bumpar a
-# versão no package.json não é suficiente. Esse script cria e envia a tag
-# correspondente automaticamente, sem precisar de um passo manual.
+# Roda depois do "npm version patch" (que já bumpou o package.json e criou
+# o commit + a tag local — é isso que o comando faz por padrão) e antes do
+# electron-builder. Esse script só sobe esse commit/tag pro GitHub e
+# pré-cria a release lá.
+#
+# Por quê pré-criar a release: electron-builder com releaseType: release
+# (ver electron-builder.yml) precisa que a tag já exista de verdade no
+# GitHub antes de publicar. Além disso, ao buildar dois formatos pro mac
+# (zip + dmg), cada um checa "existe release pra essa tag?" em paralelo —
+# se nenhuma existir ainda, os dois criam a sua própria, duplicando a
+# release (bug conhecido do electron-builder). Criando de antemão, os dois
+# encontram a mesma já existente e só sobem os arquivos nela.
 set -e
 
 VERSION=$(node -p "require('./package.json').version")
@@ -10,13 +18,8 @@ TAG="v$VERSION"
 OWNER="oseasmoreto"
 REPO="sofa.os"
 
-if git rev-parse "$TAG" >/dev/null 2>&1; then
-  echo "Tag $TAG já existe, pulando criação (retry após falha anterior?)."
-else
-  git tag "$TAG"
-  git push origin "$TAG"
-  echo "Tag $TAG criada e enviada."
-fi
+git push origin main
+git push origin "$TAG"
 
 if [ -z "$GH_TOKEN" ]; then
   echo "GH_TOKEN não definido — não é possível pré-criar a release no GitHub." >&2
@@ -30,12 +33,6 @@ EXISTING_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
 if [ "$EXISTING_STATUS" = "200" ]; then
   echo "Release $TAG já existe no GitHub, pulando criação."
 else
-  # Pré-cria a release vazia ANTES do electron-builder rodar. Sem isso, ao
-  # buildar dois formatos pro mac (zip + dmg), cada um checa "existe release
-  # pra essa tag?" em paralelo — os dois veem que não existe ainda e cada um
-  # cria a sua própria, resultando em DUAS releases duplicadas pra mesma tag
-  # (bug conhecido do electron-builder). Criando de antemão, os dois
-  # encontram a mesma release já existente e só sobem os arquivos nela.
   HTTP_STATUS=$(curl -s -o /tmp/sofa-release-create.json -w "%{http_code}" -X POST \
     -H "Authorization: token $GH_TOKEN" \
     -H "Accept: application/vnd.github+json" \

@@ -22,6 +22,7 @@ import {
 } from '../composables/spatialNav'
 import { closeWindow } from '../api/windowControls'
 import { useUpdater } from '../composables/useUpdater'
+import { getAppVersion } from '../api/updater'
 
 export type SidebarView = 'home' | 'movies' | 'series' | 'releases' | 'search' | 'watchlist'
 
@@ -46,6 +47,19 @@ const navItems: { id: SidebarView; label: string; icon: typeof Home }[] = [
 
 const itemRefs = ref<HTMLElement[]>([])
 const focusedIndex = ref(0)
+
+// Só pra saber de olho na TV/print qual build está de fato instalada, sem
+// precisar abrir o Finder — útil pra cruzar com a versão publicada no
+// GitHub Release quando algo parece desatualizado.
+const appVersion = ref('')
+
+getAppVersion()
+  .then((version) => {
+    appVersion.value = version
+  })
+  .catch(() => {
+    appVersion.value = ''
+  })
 
 const { status: updateStatus, check: checkForUpdates, install: installUpdate } = useUpdater()
 
@@ -194,6 +208,8 @@ onUnmounted(() => {
       <Power :size="22" :stroke-width="2" />
       <span class="label">Fechar</span>
     </button>
+
+    <span v-if="appVersion" class="version">v{{ appVersion }}</span>
   </nav>
 </template>
 
@@ -267,5 +283,11 @@ onUnmounted(() => {
 
 .nav-item-close:focus-visible {
   box-shadow: 0 0 0 3px #ff5f57;
+}
+
+.version {
+  margin-top: 8px;
+  font-size: 10px;
+  color: var(--ev-c-text-3);
 }
 </style>
