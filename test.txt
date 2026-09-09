@@ -27,3 +27,5 @@ tell application "System Events"
   end tell
 end tell
 '
+
+Apple, Safari, Arquivo, Editar, Visualizar, Histórico, Favoritos, Janela, Ajuda, Desfazer, Refazer, missing value, Cortar, Copiar, Colar, Colar com o Mesmo Estilo, Apagar, Selecionar Tudo, missing value, Preencher Formulário Automaticamente, missing value, Buscar, Ortografia e Gramática, Substituições, Maiúsculas/Minúsculas, Fala, missing value, Preenchimento Automático, Iniciar Ditado…, Emoji e Símbolos
