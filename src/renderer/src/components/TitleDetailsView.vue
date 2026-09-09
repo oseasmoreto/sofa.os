@@ -266,7 +266,6 @@ watch(
                   class="provider-button"
                   :title="`Assistir em ${provider.name}`"
                   @click="launchProvider(matchStreamingApp(provider.name)!)"
-                  @keydown.enter="launchProvider(matchStreamingApp(provider.name)!)"
                 >
                   <img
                     class="provider-logo"

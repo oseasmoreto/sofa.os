@@ -91,7 +91,6 @@ onUnmounted(() => {
             class="key"
             tabindex="0"
             @click="pressKey(key)"
-            @keydown.enter="pressKey(key)"
           >
             {{ key }}
           </button>
@@ -103,7 +102,6 @@ onUnmounted(() => {
             class="key key-wide"
             tabindex="0"
             @click="pressSpace"
-            @keydown.enter="pressSpace"
           >
             Espaço
           </button>
@@ -114,7 +112,6 @@ onUnmounted(() => {
             tabindex="0"
             aria-label="Apagar"
             @click="pressBackspace"
-            @keydown.enter="pressBackspace"
           >
             <Delete :size="18" />
           </button>
@@ -125,7 +122,6 @@ onUnmounted(() => {
             tabindex="0"
             aria-label="Limpar"
             @click="pressClear"
-            @keydown.enter="pressClear"
           >
             <X :size="18" />
           </button>

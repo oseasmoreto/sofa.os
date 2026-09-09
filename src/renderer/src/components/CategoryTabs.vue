@@ -49,7 +49,6 @@ function setEmblaRef(el: Element | null): void {
           :class="{ active: modelValue === tab.id }"
           tabindex="0"
           @click="emit('update:modelValue', tab.id)"
-          @keydown.enter="emit('update:modelValue', tab.id)"
         >
           {{ tab.label }}
         </button>

@@ -6,7 +6,7 @@ import { matchStreamingApp } from '../../../shared/streamingApps'
 import { getNewReleases, getTitleDetails } from '../api/tmdb'
 import { launchApp } from '../api/appLauncher'
 import { useSelection } from '../composables/selection'
-import { registerRow } from '../composables/spatialNav'
+import { refreshFocus, registerRow } from '../composables/spatialNav'
 
 const ROTATE_INTERVAL = 7000
 const ROTATE_CANDIDATES = 8
@@ -67,9 +67,24 @@ const watchOption = computed(() => {
   return null
 })
 
+const showSlideNav = computed(() => !isControlled.value && slides.value.length > 1)
+
+// A linha de foco vai [◀ slide, Assistir agora?, Mais informações, slide ▶],
+// mas os dois primeiros são condicionais — calcula o índice de cada botão
+// dinamicamente em vez de cravar posições fixas.
+const actionIndices = computed(() => {
+  let next = 0
+  const prev = showSlideNav.value ? next++ : -1
+  const watchNowIdx = watchOption.value ? next++ : -1
+  const info = next++
+  const nextSlideIdx = showSlideNav.value ? next++ : -1
+  return { prev, watchNow: watchNowIdx, info, next: nextSlideIdx }
+})
+
 const actionRefs = ref<HTMLElement[]>([])
 
 function setActionRef(el: Element | null, index: number): void {
+  if (index < 0) return
   if (el instanceof HTMLElement) actionRefs.value[index] = el
 }
 
@@ -92,22 +107,18 @@ function setHero(title: Title): void {
   loadHeroDetails(title)
 }
 
-// O botão "Assistir agora"/"Mais informações" só existe no DOM depois que
-// `hero` deixa de ser null (eles são v-if="hero"). Registrar essa linha na
-// navegação por seta ANTES disso deixaria a linha vazia no momento do
-// primeiro foco automático, e como esse é o gatilho único de auto-foco,
-// o app ficava sem nada focado e as setas paravam de responder.
-watch(
-  hero,
-  (value) => {
-    if (value && !unregisterActionRow) {
-      nextTick(() => {
-        unregisterActionRow = registerRow(() => actionRefs.value)
-      })
-    }
-  },
-  { immediate: true }
-)
+// A linha registra já no mount (preservando a ordem: o banner é sempre o
+// primeiro conteúdo da página). O problema é que os botões só existem no
+// DOM depois que `hero` deixa de ser null (são v-if="hero"), então a
+// tentativa de auto-foco inicial (que só acontece uma vez) pode encontrar
+// a linha vazia. Por isso, assim que `hero` fica disponível, pedimos pro
+// spatialNav tentar focar de novo — mas só se nada mais já tiver foco.
+watch(hero, async (value) => {
+  if (value) {
+    await nextTick()
+    refreshFocus()
+  }
+})
 
 watch(
   () => props.highlightedItem,
@@ -117,6 +128,8 @@ watch(
 )
 
 onMounted(async () => {
+  unregisterActionRow = registerRow(() => actionRefs.value)
+
   if (props.highlightedItem) {
     setHero(props.highlightedItem)
   }
@@ -167,18 +180,22 @@ function moreInfo(): void {
     </Transition>
 
     <button
-      v-if="!isControlled && slides.length > 1"
+      v-if="showSlideNav"
+      :ref="(el) => setActionRef(el as Element | null, actionIndices.prev)"
       type="button"
       class="hero-nav hero-nav-prev"
+      tabindex="0"
       aria-label="Lançamento anterior"
       @click="prevSlide"
     >
       <ChevronLeft :size="26" />
     </button>
     <button
-      v-if="!isControlled && slides.length > 1"
+      v-if="showSlideNav"
+      :ref="(el) => setActionRef(el as Element | null, actionIndices.next)"
       type="button"
       class="hero-nav hero-nav-next"
+      tabindex="0"
       aria-label="Próximo lançamento"
       @click="nextSlide"
     >
@@ -204,30 +221,28 @@ function moreInfo(): void {
       <div class="hero-actions">
         <button
           v-if="watchOption"
-          :ref="(el) => setActionRef(el as Element | null, 0)"
+          :ref="(el) => setActionRef(el as Element | null, actionIndices.watchNow)"
           type="button"
           class="btn btn-primary"
           tabindex="0"
           @click="watchNow"
-          @keydown.enter="watchNow"
         >
           <Play :size="18" fill="currentColor" />
           Assistir agora
         </button>
         <button
-          :ref="(el) => setActionRef(el as Element | null, watchOption ? 1 : 0)"
+          :ref="(el) => setActionRef(el as Element | null, actionIndices.info)"
           type="button"
           class="btn btn-secondary"
           tabindex="0"
           @click="moreInfo"
-          @keydown.enter="moreInfo"
         >
           <Info :size="18" />
           Mais informações
         </button>
       </div>
 
-      <div v-if="!isControlled && slides.length > 1" class="hero-dots">
+      <div v-if="showSlideNav" class="hero-dots">
         <button
           v-for="(slide, index) in slides"
           :key="slide.id"

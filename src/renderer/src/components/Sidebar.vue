@@ -51,12 +51,18 @@ function onFocusIn(index: number): void {
 function onKeydown(event: KeyboardEvent): void {
   if (event.key === 'ArrowDown') {
     event.preventDefault()
+    event.stopPropagation()
     focusItem(focusedIndex.value + 1)
   } else if (event.key === 'ArrowUp') {
     event.preventDefault()
+    event.stopPropagation()
     focusItem(focusedIndex.value - 1)
   } else if (event.key === 'ArrowRight') {
     event.preventDefault()
+    // Sem isso, o mesmo evento continua borbulhando até o listener global
+    // do spatialNav (agora reativado por resumeSpatialNavigation()), que
+    // processaria essa mesma seta de novo e pularia uma coluna a mais.
+    event.stopPropagation()
     resumeSpatialNavigation()
     focusGrid()
   }
@@ -88,7 +94,6 @@ onUnmounted(() => {
       :class="{ active: props.modelValue === item.id }"
       tabindex="0"
       @click="selectItem(index)"
-      @keydown.enter="selectItem(index)"
       @focus="onFocusIn(index)"
     >
       <component :is="item.icon" :size="22" :stroke-width="2" />

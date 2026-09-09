@@ -22,6 +22,23 @@ function focusCurrent(): void {
   row.onFocusIndex?.(col)
 }
 
+function isFocusWithinRows(): boolean {
+  const active = document.activeElement
+  if (!active || active === document.body) return false
+  return rows.some((row) => row.getItems().includes(active as HTMLElement))
+}
+
+// Uma linha registrada antes de seus itens existirem (ex: um card só
+// aparece depois de um fetch assíncrono resolver) fica vazia no momento
+// do auto-foco inicial, que só é tentado uma vez. Quem possui essa linha
+// deve chamar isso assim que seus itens ficarem disponíveis, pra tentar
+// focar de novo — mas só se nada mais já estiver focado nesse meio tempo.
+export function refreshFocus(): void {
+  if (!isFocusWithinRows()) {
+    focusCurrent()
+  }
+}
+
 export function registerRow(
   getItems: () => HTMLElement[],
   onFocusIndex?: (index: number) => void
