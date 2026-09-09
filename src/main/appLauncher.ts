@@ -1,9 +1,46 @@
-import { execFile } from 'child_process'
+import { execFile, spawn } from 'child_process'
 import { promisify } from 'util'
 import { ipcMain } from 'electron'
 import { streamingApps, type StreamingApp } from '../shared/streamingApps'
 
 const execFileAsync = promisify(execFile)
+
+const LINUX_KIOSK_BROWSERS = [
+  'google-chrome',
+  'google-chrome-stable',
+  'chromium',
+  'chromium-browser'
+]
+
+// execFile/exec esperam o processo terminar pra resolver a promise — o que
+// nunca aconteceria aqui, já que é o próprio browser (fica aberto até o
+// usuário fechar). spawn com detached+unref só confirma que o processo
+// nasceu (evento "spawn") e não espera o resto da vida dele.
+function spawnDetached(command: string, args: string[]): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, { detached: true, stdio: 'ignore' })
+    child.once('error', reject)
+    child.once('spawn', () => {
+      child.unref()
+      resolve()
+    })
+  })
+}
+
+async function openKioskLinux(url: string): Promise<void> {
+  for (const browser of LINUX_KIOSK_BROWSERS) {
+    try {
+      await spawnDetached(browser, ['--kiosk', url])
+      return
+    } catch {
+      // binário não instalado nesse sistema; tenta o próximo da lista
+    }
+  }
+
+  // nenhum Chromium disponível: abre no navegador padrão do sistema, sem
+  // kiosk (não temos garantia de que ele suporte a flag)
+  await execFileAsync('xdg-open', [url])
+}
 
 export interface LaunchPlan {
   kind: 'native' | 'browser'
@@ -89,10 +126,21 @@ async function openInBrowser(url: string): Promise<void> {
       await enterSafariFullscreen()
       break
     case 'win32':
-      await execFileAsync('cmd', ['/c', 'start', '""', 'msedge', url])
+      // --edge-kiosk-type=fullscreen garante tela cheia de verdade (o
+      // --kiosk sozinho já tira barra de endereço e abas, mas sem essa
+      // flag o Edge pode abrir só maximizado, não em fullscreen real).
+      await execFileAsync('cmd', [
+        '/c',
+        'start',
+        '""',
+        'msedge',
+        '--kiosk',
+        url,
+        '--edge-kiosk-type=fullscreen'
+      ])
       break
     default:
-      await execFileAsync('xdg-open', [url])
+      await openKioskLinux(url)
       break
   }
 }
