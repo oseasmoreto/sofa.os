@@ -25,6 +25,13 @@ import { useUpdater } from '../composables/useUpdater'
 
 export type SidebarView = 'home' | 'movies' | 'series' | 'releases' | 'search' | 'watchlist'
 
+// Sem a barra inicial (que funcionaria em dev mas quebra no app empacotado,
+// que abre via file:// — caminho começando com "/" vira raiz do disco, não
+// da pasta do app). Como binding dinâmica, o compilador do Vue não tenta
+// resolver isso como import relativo ao componente (o que falharia, já que
+// o arquivo real está em public/, não ao lado do Sidebar.vue).
+const markIcon = 'favicon.svg'
+
 const props = defineProps<{ modelValue: SidebarView }>()
 const emit = defineEmits<{ 'update:modelValue': [SidebarView] }>()
 
@@ -147,7 +154,7 @@ onUnmounted(() => {
 
 <template>
   <nav class="sidebar" @keydown="onKeydown">
-    <img class="mark" src="/favicon.svg" alt="sofa.OS" />
+    <img class="mark" :src="markIcon" alt="sofa.OS" />
     <button
       v-for="(item, index) in navItems"
       :key="item.id"

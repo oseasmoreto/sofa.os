@@ -43,5 +43,10 @@ publish:
   provider: github
   owner: oseasmoreto
   repo: sofa.os
+  # Por padrão o electron-builder sempre cria a release como draft, esperando
+  # publicação manual no GitHub. Como não tem revisão nenhuma no meio (é só
+  # eu publicando), pula direto pra release pública — senão o electron-updater
+  # nunca encontra a versão nova (a API pública do GitHub não lista drafts).
+  releaseType: release
 electronDownload:
   mirror: https://npmmirror.com/mirrors/electron/

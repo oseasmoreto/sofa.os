@@ -21,7 +21,7 @@ export const streamingApps: StreamingApp[] = [
     name: 'Netflix',
     color: '#000000',
     initials: 'N',
-    icon: '/streaming-icons/netflix.svg',
+    icon: 'streaming-icons/netflix.svg',
     launch: {
       type: 'browser',
       homeUrl: 'https://www.netflix.com',
@@ -34,7 +34,7 @@ export const streamingApps: StreamingApp[] = [
     name: 'Disney+',
     color: '#1A1D29',
     initials: 'D+',
-    icon: '/streaming-icons/disneyplus.svg',
+    icon: 'streaming-icons/disneyplus.svg',
     iconFit: 'cover',
     launch: {
       type: 'browser',
@@ -48,7 +48,7 @@ export const streamingApps: StreamingApp[] = [
     name: 'Prime Video',
     color: '#0F1720',
     initials: 'PV',
-    icon: '/streaming-icons/primevideo.svg',
+    icon: 'streaming-icons/primevideo.svg',
     launch: {
       type: 'browser',
       homeUrl: 'https://www.primevideo.com',
@@ -61,7 +61,7 @@ export const streamingApps: StreamingApp[] = [
     name: 'Apple TV+',
     color: '#000000',
     initials: 'tv',
-    icon: '/streaming-icons/appletv.svg',
+    icon: 'streaming-icons/appletv.svg',
     launch: {
       type: 'browser',
       homeUrl: 'https://tv.apple.com',
@@ -74,7 +74,7 @@ export const streamingApps: StreamingApp[] = [
     name: 'Crunchyroll',
     color: '#1F1F1F',
     initials: 'CR',
-    icon: '/streaming-icons/crunchyroll.svg',
+    icon: 'streaming-icons/crunchyroll.svg',
     launch: {
       type: 'browser',
       homeUrl: 'https://www.crunchyroll.com',
@@ -87,7 +87,7 @@ export const streamingApps: StreamingApp[] = [
     name: 'HBO Max',
     color: '#5822B4',
     initials: 'Max',
-    icon: '/streaming-icons/hbomax.svg',
+    icon: 'streaming-icons/hbomax.svg',
     launch: {
       type: 'browser',
       homeUrl: 'https://www.hbomax.com',
@@ -100,7 +100,7 @@ export const streamingApps: StreamingApp[] = [
     name: 'Globoplay',
     color: '#E60014',
     initials: 'GP',
-    icon: '/streaming-icons/globoplay.png',
+    icon: 'streaming-icons/globoplay.png',
     iconFit: 'cover',
     launch: {
       type: 'browser',
