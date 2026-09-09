@@ -39,3 +39,5 @@ tell application "System Events"
   end tell
 end tell
 '
+
+Sempre Mostrar Barra de Ferramentas em Tela Cheia, Personalizar Barra de Ferramentas…, missing value, Sempre Mostrar Barra de Abas, Mostrar Barra de Preferidos, Mostrar Barra de Estado, missing value, Mostrar Barra Lateral, Mostrar Barra Lateral de Favoritos, Mostrar Barra Lateral da Lista de Leitura, Mostrar Compartilhado com Você, missing value, Mostrar Leitor, Mostrar Visão Geral de Abas, Mostrar Downloads, missing value, Parar, Recarregar Página, Recarregar Página a Partir da Origem, missing value, Tradução, missing value, Tamanho Real, Ampliar, Tornar o Texto Maior, Reduzir, Tornar o Texto Menor, missing value, Codificação do Texto, missing value, Entrar em Tela Cheia
