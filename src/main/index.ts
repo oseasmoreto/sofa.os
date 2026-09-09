@@ -8,22 +8,6 @@ import { registerTmdbIpc } from './services/tmdb'
 import { registerAppLauncherIpc } from './appLauncher'
 import { registerUpdaterIpc } from './updater'
 
-// O .env fica de fora do pacote de propósito (senão as chaves da API iriam
-// pro DMG publicado no GitHub Release, que é público). No app empacotado,
-// process.cwd() não é a pasta do projeto, então carregamos de um local fixo
-// fora do bundle — o mesmo diretório onde já fica o banco SQLite. Em dev
-// (npm run dev), esse arquivo não existe ainda, então cai no fallback e lê
-// o .env normal da raiz do projeto, como sempre.
-try {
-  process.loadEnvFile(join(app.getPath('userData'), '.env'))
-} catch {
-  try {
-    process.loadEnvFile()
-  } catch {
-    // .env é opcional; chamadas às APIs externas falham com erro claro se as chaves faltarem
-  }
-}
-
 // Necessário no MacBook Air 2017 (GPU Intel integrada antiga): o backend OpenGL
 // padrão do ANGLE falha na inicialização nessa GPU ("eglQueryDeviceAttribEXT: bad
 // attribute") e a janela nunca abre. Forçar o backend Metal evita esse caminho
@@ -72,6 +56,27 @@ function createWindow(): void {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
+  // O .env fica de fora do pacote de propósito (senão as chaves da API
+  // iriam pro DMG publicado no GitHub Release, que é público), então
+  // carregamos de um local fixo fora do bundle — o mesmo diretório onde já
+  // fica o banco SQLite. Precisa ser feito só depois do app estar "ready":
+  // chamado antes disso, app.getPath('userData') não é confiável (a
+  // identidade do app ainda não está totalmente resolvida), e caía num
+  // fallback por process.cwd() que só funcionava por acidente quando o
+  // app era aberto a partir de dentro dessa mesma pasta via terminal — no
+  // Finder, o cwd padrão não tem esse arquivo, e o carregamento falhava
+  // silenciosamente. Em dev (npm run dev) esse arquivo não existe ainda,
+  // então cai no fallback e lê o .env normal da raiz do projeto, como sempre.
+  try {
+    process.loadEnvFile(join(app.getPath('userData'), '.env'))
+  } catch {
+    try {
+      process.loadEnvFile()
+    } catch {
+      // .env é opcional; chamadas às APIs externas falham com erro claro se as chaves faltarem
+    }
+  }
+
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.sofaos.launcher')
 
