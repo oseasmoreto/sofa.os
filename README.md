@@ -53,6 +53,39 @@ Sem a chave do TMDb o app não funciona (não tem catálogo pra mostrar). Sem a 
 
 O sofa.os tem um botão **Atualizar** no fim da barra lateral. Ele só confere se existe uma versão mais nova publicada — a instalação em si continua manual (baixar o `.dmg` novo e repetir os passos 1 e 2 acima). A troca automática de versão foi descartada de propósito: o mecanismo nativo do macOS pra isso (Squirrel.Mac) exige um certificado de assinatura pago da Apple pra funcionar de ponta a ponta, e sem ele a instalação falha no meio do caminho mesmo com assinatura ad-hoc.
 
+**Depois de reinstalar uma versão nova, refaça a permissão de Acessibilidade** (Ajustes do Sistema → Privacidade e Segurança → Acessibilidade): remova a entrada antiga do sofa.os da lista, abra o app de novo e conceda a permissão quando ele pedir. Isso é necessário toda vez — como o app usa assinatura ad-hoc (sem certificado fixo da Apple), cada build tem uma assinatura diferente, e o macOS invalida silenciosamente a permissão concedida à versão anterior (ela continua aparecendo na lista, mas já não vale mais). Sem refazer esse passo, o app não consegue colocar o Safari em tela cheia ao abrir um streaming.
+
+### 5. Configuração de appliance (recomendado pra uso fixo atrás da TV)
+
+Isso transforma o Mac num "aparelho" — liga e o sofa.os já sobe sozinho em tela cheia, sem precisar mexer em nada. São só ajustes do macOS, nenhum deles muda o app.
+
+**Permissão de Acessibilidade** — necessária pra o app conseguir colocar o Safari em tela cheia e esconder a barra de ferramentas/abas ao abrir um streaming. Abre o app uma vez e clica em algum streaming; se o pedido de permissão não aparecer sozinho:
+
+```bash
+open "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"
+```
+
+Adiciona o sofa.os na lista (botão **+**) e liga o toggle.
+
+**Login automático** — Ajustes do Sistema → Usuários e Grupos → Opções de Login → "Fazer login automaticamente". Só fica disponível com **FileVault desativado** (disco criptografado sempre exige senha manual no boot, mesmo com essa opção configurada — é uma troca segurança-vs-conveniência que só você pode decidir).
+
+**App abrindo sozinho** — Ajustes do Sistema → Geral → Itens de Login e Extensões → Itens de Login → **+** → adiciona `/Applications/sofa.os.app`. Não precisa de nada extra: a janela já abre com fullscreen nativo.
+
+**Dock e barra de menu** — não costuma precisar mexer: por estar em fullscreen nativo do macOS, os dois já ficam escondidos sozinhos enquanto o app está em foco. Só configura manualmente (Ajustes do Sistema → Desktop e Dock) se notar alguma borda aparecendo.
+
+**Nunca dormir / sem protetor de tela** (enquanto conectado à energia):
+
+```bash
+sudo pmset -c sleep 0
+sudo pmset -c displaysleep 0
+sudo pmset -c disksleep 0
+defaults -currentHost write com.apple.screensaver idleTime 0
+```
+
+O `-c` é "enquanto ligado no carregador" — na bateria, o comportamento normal de economia continua valendo.
+
+Depois de tudo, reinicia o Mac de verdade (não só sair da conta) pra testar o ciclo completo: boot → login → app já em fullscreen, sem precisar tocar em nada.
+
 ## Stack
 
 - [Electron](https://www.electronjs.org/) + [electron-vite](https://electron-vite.org/)
