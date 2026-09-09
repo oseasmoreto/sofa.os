@@ -20,6 +20,12 @@ nsis:
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
 mac:
+  # Sem certificado de desenvolvedor Apple, mas o auto-update (Squirrel.Mac)
+  # exige ALGUMA assinatura pra conseguir ler a assinatura do app rodando —
+  # sem isso o "Reiniciar" falha com "Could not get code signature for
+  # running application". "-" assina localmente sem certificado nenhum
+  # (ad-hoc), suficiente pra essa checagem.
+  identity: '-'
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
     - NSCameraUsageDescription: Application requests access to the device's camera.

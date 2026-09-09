@@ -8,5 +8,11 @@
     <true/>
     <key>com.apple.security.cs.allow-dyld-environment-variables</key>
     <true/>
+    <!-- Necessário pra assinatura ad-hoc (sem certificado Apple Developer):
+         os frameworks pré-compilados do Electron carregam o Team ID real da
+         Apple, enquanto nossa assinatura ad-hoc não tem nenhum — sem essa
+         entitlement, o hardened runtime rejeita o app na hora de abrir. -->
+    <key>com.apple.security.cs.disable-library-validation</key>
+    <true/>
   </dict>
 </plist>
