@@ -10,9 +10,12 @@ const props = defineProps<{
 
 const { select } = useSelection()
 
+const RELEASE_BATCH_SIZE = 21
+
 const items = ref<Title[]>([])
-const page = ref(0)
-const hasMore = ref(true)
+const buffer = ref<Title[]>([])
+const tmdbPage = ref(0)
+const hasMoreFromApi = ref(true)
 const loading = ref(true)
 const loadingMore = ref(false)
 const error = ref<string | null>(null)
@@ -49,20 +52,32 @@ function registerNewRows(): void {
   registeredRows = totalRows
 }
 
+async function fetchNextTmdbPage(): Promise<void> {
+  const nextPage = tmdbPage.value + 1
+  const result = await props.fetch(nextPage)
+  buffer.value = [...buffer.value, ...result.items]
+  tmdbPage.value = nextPage
+  hasMoreFromApi.value = result.hasMore
+}
+
 async function loadMore(): Promise<void> {
-  if (loadingMore.value || !hasMore.value) return
+  if (loadingMore.value) return
+  if (!hasMoreFromApi.value && buffer.value.length === 0) return
 
   loadingMore.value = true
   try {
-    const nextPage = page.value + 1
-    const result = await props.fetch(nextPage)
-    items.value = [...items.value, ...result.items]
-    page.value = nextPage
-    hasMore.value = result.hasMore
+    while (buffer.value.length < RELEASE_BATCH_SIZE && hasMoreFromApi.value) {
+      await fetchNextTmdbPage()
+    }
+
+    const releaseCount = Math.min(RELEASE_BATCH_SIZE, buffer.value.length)
+    items.value = [...items.value, ...buffer.value.slice(0, releaseCount)]
+    buffer.value = buffer.value.slice(releaseCount)
+
     await nextTick()
     registerNewRows()
   } catch {
-    hasMore.value = false
+    hasMoreFromApi.value = false
   } finally {
     loadingMore.value = false
   }
