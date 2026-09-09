@@ -9,6 +9,7 @@ export interface Title {
   backdropPath: string | null
   voteAverage: number
   releaseDate: string | null
+  availableInBR: boolean
 }
 
 export interface WatchlistItem extends Title {

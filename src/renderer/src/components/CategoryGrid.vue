@@ -135,6 +135,7 @@ onUnmounted(() => {
           loading="lazy"
         />
         <div v-else class="poster poster-fallback">{{ item.title }}</div>
+        <span v-if="!item.availableInBR" class="unavailable-badge">Indisponível no BR</span>
       </div>
     </div>
   </div>
@@ -175,11 +176,28 @@ onUnmounted(() => {
 }
 
 .card {
+  position: relative;
   flex: 0 0 auto;
   width: 160px;
   cursor: pointer;
   border-radius: 10px;
   transition: transform 150ms ease;
+}
+
+.unavailable-badge {
+  position: absolute;
+  left: 6px;
+  bottom: 6px;
+  right: 6px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  background-color: rgba(20, 20, 22, 0.85);
+  color: #ff8a8a;
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.3;
+  pointer-events: none;
 }
 
 .card:hover {

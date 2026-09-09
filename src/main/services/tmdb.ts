@@ -46,6 +46,11 @@ interface TmdbWatchProvidersRegion {
   flatrate?: TmdbProvider[]
   rent?: TmdbProvider[]
   buy?: TmdbProvider[]
+  free?: TmdbProvider[]
+}
+
+interface TmdbWatchProvidersResponse {
+  results: Record<string, TmdbWatchProvidersRegion>
 }
 
 interface TmdbDetailsResult extends TmdbResult {
@@ -89,15 +94,65 @@ function toTitle(raw: TmdbResult, fallbackMediaType: MediaType): Title {
     posterPath: raw.poster_path,
     backdropPath: raw.backdrop_path,
     voteAverage: raw.vote_average,
-    releaseDate: raw.release_date ?? raw.first_air_date ?? null
+    releaseDate: raw.release_date ?? raw.first_air_date ?? null,
+    // assumido disponível até a checagem em enrichAvailability() resolver
+    availableInBR: true
   }
 }
 
-function toTitlePage(data: TmdbListResponse, mediaType: MediaType): TitlePage {
-  return {
-    items: data.results.map((raw) => toTitle(raw, mediaType)),
-    hasMore: data.page < data.total_pages
+function collectProviders(region: TmdbWatchProvidersRegion | undefined): TmdbProvider[] {
+  return [
+    ...(region?.flatrate ?? []),
+    ...(region?.rent ?? []),
+    ...(region?.buy ?? []),
+    ...(region?.free ?? [])
+  ]
+}
+
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T) => Promise<R>
+): Promise<R[]> {
+  const results: R[] = new Array(items.length)
+  let nextIndex = 0
+
+  async function worker(): Promise<void> {
+    while (nextIndex < items.length) {
+      const current = nextIndex++
+      results[current] = await fn(items[current])
+    }
   }
+
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker))
+  return results
+}
+
+async function isAvailableInBR(id: number, mediaType: MediaType): Promise<boolean> {
+  try {
+    const path =
+      mediaType === 'movie' ? `/movie/${id}/watch/providers` : `/tv/${id}/watch/providers`
+    const data = await request<TmdbWatchProvidersResponse>(path)
+    return collectProviders(data.results.BR).length > 0
+  } catch {
+    // em caso de erro na checagem, não marca como indisponível (evita falso negativo)
+    return true
+  }
+}
+
+// Listas/discover do TMDb não trazem watch providers embutidos por item, então
+// a única forma de saber disponibilidade é checar título por título. Limitado
+// a algumas chamadas simultâneas pra não estourar rate limit da API.
+async function enrichAvailability(items: Title[]): Promise<Title[]> {
+  return mapWithConcurrency(items, 15, async (item) => ({
+    ...item,
+    availableInBR: await isAvailableInBR(item.id, item.mediaType)
+  }))
+}
+
+async function toTitlePage(data: TmdbListResponse, mediaType: MediaType): Promise<TitlePage> {
+  const items = await enrichAvailability(data.results.map((raw) => toTitle(raw, mediaType)))
+  return { items, hasMore: data.page < data.total_pages }
 }
 
 export async function getTrending(page = 1): Promise<TitlePage> {
@@ -194,9 +249,11 @@ export async function searchMulti(query: string, page = 1): Promise<TitlePage> {
     page: String(page)
   })
 
-  const items = data.results
-    .filter((raw) => raw.media_type === 'movie' || raw.media_type === 'tv')
-    .map((raw) => toTitle(raw, raw.media_type as MediaType))
+  const items = await enrichAvailability(
+    data.results
+      .filter((raw) => raw.media_type === 'movie' || raw.media_type === 'tv')
+      .map((raw) => toTitle(raw, raw.media_type as MediaType))
+  )
 
   return {
     items,
@@ -231,13 +288,9 @@ export async function getTitleDetails(id: number, mediaType: MediaType): Promise
   }))
 
   const region = data['watch/providers']?.results.BR
-  const providers = dedupeProviders([
-    ...(region?.flatrate ?? []),
-    ...(region?.rent ?? []),
-    ...(region?.buy ?? [])
-  ])
+  const providers = dedupeProviders(collectProviders(region))
 
-  return { ...toTitle(data, mediaType), cast, providers }
+  return { ...toTitle(data, mediaType), cast, providers, availableInBR: providers.length > 0 }
 }
 
 export function registerTmdbIpc(): void {
