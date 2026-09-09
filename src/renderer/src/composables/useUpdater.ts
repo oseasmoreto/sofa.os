@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import type { UpdateStatus } from '../../../shared/types'
-import { checkForUpdates, onUpdateStatus, quitAndInstall } from '../api/updater'
+import { checkForUpdates, onUpdateStatus, openDownloadPage } from '../api/updater'
 
 const status = ref<UpdateStatus>({ state: 'idle' })
 let subscribed = false
@@ -8,7 +8,7 @@ let subscribed = false
 export function useUpdater(): {
   status: typeof status
   check: () => Promise<void>
-  install: () => Promise<void>
+  openDownload: () => Promise<void>
 } {
   if (!subscribed) {
     subscribed = true
@@ -20,6 +20,6 @@ export function useUpdater(): {
   return {
     status,
     check: checkForUpdates,
-    install: quitAndInstall
+    openDownload: openDownloadPage
   }
 }

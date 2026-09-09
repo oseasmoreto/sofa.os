@@ -1,6 +1,8 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import type { UpdateStatus } from '../shared/types'
+
+const RELEASES_URL = 'https://github.com/oseasmoreto/sofa.os/releases/latest'
 
 function broadcast(status: UpdateStatus): void {
   for (const window of BrowserWindow.getAllWindows()) {
@@ -9,20 +11,18 @@ function broadcast(status: UpdateStatus): void {
 }
 
 export function registerUpdaterIpc(): void {
-  autoUpdater.autoDownload = true
-  autoUpdater.autoInstallOnAppQuit = false
+  // Só detecta se existe versão nova — a troca em si fica manual (baixar o
+  // .dmg da release e reinstalar). A instalação automática via Squirrel.Mac
+  // exige um certificado de assinatura pago da Apple pra passar da checagem
+  // de consistência entre versões; sem ele, o processo falha no meio do
+  // caminho mesmo com assinatura ad-hoc.
+  autoUpdater.autoDownload = false
 
   autoUpdater.on('checking-for-update', () => broadcast({ state: 'checking' }))
   autoUpdater.on('update-available', (info) =>
     broadcast({ state: 'available', version: info.version })
   )
   autoUpdater.on('update-not-available', () => broadcast({ state: 'not-available' }))
-  autoUpdater.on('download-progress', (progress) =>
-    broadcast({ state: 'downloading', percent: Math.round(progress.percent) })
-  )
-  autoUpdater.on('update-downloaded', (info) =>
-    broadcast({ state: 'downloaded', version: info.version })
-  )
   autoUpdater.on('error', (error) => {
     console.error('Erro no auto-updater:', error)
     broadcast({ state: 'error', message: error.message })
@@ -43,9 +43,7 @@ export function registerUpdaterIpc(): void {
     }
   })
 
-  ipcMain.handle('updater:quitAndInstall', () => {
-    autoUpdater.quitAndInstall()
-  })
+  ipcMain.handle('updater:openDownloadPage', () => shell.openExternal(RELEASES_URL))
 
   ipcMain.handle('updater:getVersion', () => app.getVersion())
 }

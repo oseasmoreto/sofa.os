@@ -52,7 +52,7 @@ const api = {
   },
   updater: {
     check: (): Promise<void> => ipcRenderer.invoke('updater:check'),
-    quitAndInstall: (): Promise<void> => ipcRenderer.invoke('updater:quitAndInstall'),
+    openDownloadPage: (): Promise<void> => ipcRenderer.invoke('updater:openDownloadPage'),
     getVersion: (): Promise<string> => ipcRenderer.invoke('updater:getVersion'),
     onStatus: (callback: (status: UpdateStatus) => void): (() => void) => {
       const listener = (_event: unknown, status: UpdateStatus): void => callback(status)

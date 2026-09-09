@@ -51,7 +51,7 @@ Sem a chave do TMDb o app não funciona (não tem catálogo pra mostrar). Sem a 
 
 ### 4. Atualizações
 
-O sofa.os tem um botão **Atualizar** no fim da barra lateral. Ele confere se existe uma versão mais nova publicada, baixa e pergunta se quer reiniciar para aplicar — não precisa baixar um novo `.dmg` manualmente depois da primeira instalação.
+O sofa.os tem um botão **Atualizar** no fim da barra lateral. Ele só confere se existe uma versão mais nova publicada — a instalação em si continua manual (baixar o `.dmg` novo e repetir os passos 1 e 2 acima). A troca automática de versão foi descartada de propósito: o mecanismo nativo do macOS pra isso (Squirrel.Mac) exige um certificado de assinatura pago da Apple pra funcionar de ponta a ponta, e sem ele a instalação falha no meio do caminho mesmo com assinatura ad-hoc.
 
 ## Stack
 

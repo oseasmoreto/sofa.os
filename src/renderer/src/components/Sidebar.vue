@@ -61,18 +61,14 @@ getAppVersion()
     appVersion.value = ''
   })
 
-const { status: updateStatus, check: checkForUpdates, install: installUpdate } = useUpdater()
+const { status: updateStatus, check: checkForUpdates, openDownload } = useUpdater()
 
 const updateLabel = computed(() => {
   switch (updateStatus.value.state) {
     case 'checking':
       return 'Verificando…'
     case 'available':
-      return 'Baixando…'
-    case 'downloading':
-      return `Baixando ${updateStatus.value.percent}%`
-    case 'downloaded':
-      return 'Reiniciar'
+      return 'Nova versão'
     case 'not-available':
       return 'Atualizado'
     case 'error':
@@ -84,7 +80,7 @@ const updateLabel = computed(() => {
 
 const updateIcon = computed(() => {
   switch (updateStatus.value.state) {
-    case 'downloaded':
+    case 'available':
       return Download
     case 'not-available':
       return Check
@@ -95,17 +91,15 @@ const updateIcon = computed(() => {
   }
 })
 
-const updateBusy = computed(
-  () =>
-    updateStatus.value.state === 'checking' ||
-    updateStatus.value.state === 'available' ||
-    updateStatus.value.state === 'downloading'
-)
-
+// Instalação automática (Squirrel.Mac) exige certificado de assinatura pago
+// da Apple pra funcionar de ponta a ponta — sem ele, a checagem de
+// consistência entre versões falha mesmo com assinatura ad-hoc. Por isso,
+// ao detectar versão nova, o botão só abre a página de download da release
+// (reinstalação continua manual, igual já era antes de existir esse botão).
 function onUpdateActivate(): void {
-  if (updateStatus.value.state === 'downloaded') {
-    installUpdate()
-  } else if (!updateBusy.value) {
+  if (updateStatus.value.state === 'available') {
+    openDownload()
+  } else if (updateStatus.value.state !== 'checking') {
     checkForUpdates()
   }
 }

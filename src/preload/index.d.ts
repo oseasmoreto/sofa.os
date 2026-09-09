@@ -35,7 +35,7 @@ interface SofaApi {
   }
   updater: {
     check: () => Promise<void>
-    quitAndInstall: () => Promise<void>
+    openDownloadPage: () => Promise<void>
     getVersion: () => Promise<string>
     onStatus: (callback: (status: UpdateStatus) => void) => () => void
   }

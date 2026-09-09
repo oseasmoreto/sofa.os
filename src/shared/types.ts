@@ -40,11 +40,14 @@ export interface TitlePage {
   hasMore: boolean
 }
 
+// Instalação automática (Squirrel.Mac) exige um certificado de assinatura
+// pago da Apple pra funcionar de ponta a ponta — sem ele, a checagem de
+// consistência entre versões falha mesmo com assinatura ad-hoc. Por isso o
+// updater só detecta se existe versão nova; a troca em si é manual (baixar
+// o .dmg da release e reinstalar).
 export type UpdateStatus =
   | { state: 'idle' }
   | { state: 'checking' }
   | { state: 'available'; version: string }
   | { state: 'not-available' }
-  | { state: 'downloading'; percent: number }
-  | { state: 'downloaded'; version: string }
   | { state: 'error'; message: string }
