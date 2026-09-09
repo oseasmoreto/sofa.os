@@ -76,8 +76,8 @@ function setEmblaRef(el: Element | null): void {
 
 .tabs-viewport {
   overflow: hidden;
-  padding: 6px 0;
-  margin: -6px 0;
+  padding: 6px 10px;
+  margin: -6px -10px;
 }
 
 .tabs-container {

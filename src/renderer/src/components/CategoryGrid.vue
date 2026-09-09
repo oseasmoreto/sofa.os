@@ -144,7 +144,8 @@ onUnmounted(() => {
 .category-grid {
   flex: 1;
   overflow-y: auto;
-  padding: 8px 48px 40px 32px;
+  padding: 14px 48px 40px 32px;
+  margin-top: -6px;
 }
 
 .centered {

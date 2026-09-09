@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ChevronLeft, ChevronRight, Info, Play } from 'lucide-vue-next'
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import type { Title, TitleDetails } from '../../../shared/types'
 import { matchStreamingApp } from '../../../shared/streamingApps'
 import { getNewReleases, getTitleDetails } from '../api/tmdb'
@@ -73,7 +73,7 @@ function setActionRef(el: Element | null, index: number): void {
   if (el instanceof HTMLElement) actionRefs.value[index] = el
 }
 
-let unregister: (() => void) | null = null
+let unregisterActionRow: (() => void) | null = null
 let heroRequestId = 0
 
 async function loadHeroDetails(title: Title): Promise<void> {
@@ -92,6 +92,23 @@ function setHero(title: Title): void {
   loadHeroDetails(title)
 }
 
+// O botão "Assistir agora"/"Mais informações" só existe no DOM depois que
+// `hero` deixa de ser null (eles são v-if="hero"). Registrar essa linha na
+// navegação por seta ANTES disso deixaria a linha vazia no momento do
+// primeiro foco automático, e como esse é o gatilho único de auto-foco,
+// o app ficava sem nada focado e as setas paravam de responder.
+watch(
+  hero,
+  (value) => {
+    if (value && !unregisterActionRow) {
+      nextTick(() => {
+        unregisterActionRow = registerRow(() => actionRefs.value)
+      })
+    }
+  },
+  { immediate: true }
+)
+
 watch(
   () => props.highlightedItem,
   (item) => {
@@ -100,28 +117,25 @@ watch(
 )
 
 onMounted(async () => {
-  unregister = registerRow(() => actionRefs.value)
-
-  if (isControlled.value) {
-    if (props.highlightedItem) setHero(props.highlightedItem)
-    return
+  if (props.highlightedItem) {
+    setHero(props.highlightedItem)
   }
 
   try {
     const page = await getNewReleases()
     slides.value = page.items.slice(0, ROTATE_CANDIDATES)
-    if (slides.value[0]) {
+    if (!hero.value && slides.value[0]) {
       slideIndex.value = 0
       setHero(slides.value[0])
-      startRotation()
     }
+    if (!isControlled.value) startRotation()
   } catch {
-    hero.value = null
+    // sem lista de rotação; segue com o hero vindo de highlightedItem, se houver
   }
 })
 
 onUnmounted(() => {
-  unregister?.()
+  unregisterActionRow?.()
   stopRotation()
 })
 
