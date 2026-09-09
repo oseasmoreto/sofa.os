@@ -152,7 +152,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 8px 48px 24px 32px;
+  padding: 32px 48px 24px 32px;
 }
 
 .search-input {

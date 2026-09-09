@@ -4,6 +4,7 @@ import { onMounted, onUnmounted, ref } from 'vue'
 import {
   focusGrid,
   pauseSpatialNavigation,
+  resetPosition,
   resumeSpatialNavigation,
   setLeftEdgeHandler
 } from '../composables/spatialNav'
@@ -38,6 +39,8 @@ function focusItem(index: number): void {
 function selectItem(index: number): void {
   focusedIndex.value = index
   emit('update:modelValue', navItems[index].id)
+  resetPosition()
+  resumeSpatialNavigation()
 }
 
 function onFocusIn(index: number): void {

@@ -10,7 +10,8 @@ const props = defineProps<{
 
 const { select } = useSelection()
 
-const RELEASE_BATCH_SIZE = 21
+const ROWS_PER_BATCH = 4
+const MIN_BATCH_SIZE = 21
 
 const items = ref<Title[]>([])
 const buffer = ref<Title[]>([])
@@ -64,13 +65,15 @@ async function loadMore(): Promise<void> {
   if (loadingMore.value) return
   if (!hasMoreFromApi.value && buffer.value.length === 0) return
 
+  const batchSize = Math.max(columnCount.value * ROWS_PER_BATCH, MIN_BATCH_SIZE)
+
   loadingMore.value = true
   try {
-    while (buffer.value.length < RELEASE_BATCH_SIZE && hasMoreFromApi.value) {
+    while (buffer.value.length < batchSize && hasMoreFromApi.value) {
       await fetchNextTmdbPage()
     }
 
-    const releaseCount = Math.min(RELEASE_BATCH_SIZE, buffer.value.length)
+    const releaseCount = Math.min(batchSize, buffer.value.length)
     items.value = [...items.value, ...buffer.value.slice(0, releaseCount)]
     buffer.value = buffer.value.slice(releaseCount)
 
@@ -180,12 +183,14 @@ onUnmounted(() => {
 
 .card:hover {
   transform: scale(1.05);
+  z-index: 1;
 }
 
 .card:focus-visible {
   transform: scale(1.08);
   outline: none;
   box-shadow: 0 0 0 3px #a60866;
+  z-index: 2;
 }
 
 .poster {

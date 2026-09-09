@@ -69,6 +69,15 @@ function moveCol(delta: number): void {
 }
 
 function onKeydown(event: KeyboardEvent): void {
+  // Tab é bloqueado globalmente: a navegação por foco padrão do browser
+  // não conhece o sistema de linhas do spatialNav e pode levar o foco pra
+  // fora dele (ex: parar num item da sidebar), deixando "enabled" travado
+  // em false pra sempre e as setas mortas.
+  if (event.key === 'Tab') {
+    event.preventDefault()
+    return
+  }
+
   if (!enabled.value) return
 
   switch (event.key) {
@@ -102,6 +111,11 @@ export function pauseSpatialNavigation(): void {
 
 export function resumeSpatialNavigation(): void {
   enabled.value = true
+}
+
+export function resetPosition(): void {
+  position.rowIndex = 0
+  position.colIndex = 0
 }
 
 export function focusGrid(): void {

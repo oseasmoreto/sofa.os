@@ -2,7 +2,6 @@
 import { ref } from 'vue'
 import WindowControls from './components/WindowControls.vue'
 import Sidebar, { type SidebarView } from './components/Sidebar.vue'
-import TopBar from './components/TopBar.vue'
 import HomeView from './components/HomeView.vue'
 import MoviesView from './components/MoviesView.vue'
 import SeriesView from './components/SeriesView.vue'
@@ -24,7 +23,6 @@ const activeView = ref<SidebarView>('home')
   <div class="app-shell">
     <Sidebar v-model="activeView" />
     <div class="main-column">
-      <TopBar />
       <HomeView v-if="activeView === 'home'" />
       <MoviesView v-else-if="activeView === 'movies'" />
       <SeriesView v-else-if="activeView === 'series'" />

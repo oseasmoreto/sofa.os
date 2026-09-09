@@ -142,12 +142,14 @@ watch(
 
 .card:hover {
   transform: scale(1.05);
+  z-index: 1;
 }
 
 .card:focus-visible {
   transform: scale(1.08);
   outline: none;
   box-shadow: 0 0 0 3px #a60866;
+  z-index: 2;
 }
 
 .poster {

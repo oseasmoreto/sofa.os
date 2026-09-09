@@ -71,7 +71,7 @@ function setEmblaRef(el: Element | null): void {
 <style scoped>
 .tabs-wrapper {
   position: relative;
-  padding: 0 48px 16px 32px;
+  padding: 28px 48px 16px 32px;
 }
 
 .tabs-viewport {
