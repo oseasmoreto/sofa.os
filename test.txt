@@ -12,3 +12,18 @@ end tell
 
 
 173:177: execution error: System Events obteve um erro: Não é possível obter menu bar item "View" of menu bar 1 of process "Safari". (-1728)
+
+osascript -e '
+tell application "Safari" to activate
+delay 0.5
+tell application "System Events"
+  tell process "Safari"
+    set topNames to name of every menu bar item of menu bar 1
+    set viewChildren to {}
+    try
+      set viewChildren to name of every menu item of menu 1 of menu bar item 4 of menu bar 1
+    end try
+    return {topNames, viewChildren}
+  end tell
+end tell
+'
