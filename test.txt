@@ -9,3 +9,6 @@ tell application "System Events"
   end tell
 end tell
 '
+
+
+173:177: execution error: System Events obteve um erro: Não é possível obter menu bar item "View" of menu bar 1 of process "Safari". (-1728)
