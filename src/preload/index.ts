@@ -11,9 +11,7 @@ import type {
 // Custom APIs for renderer
 const api = {
   window: {
-    close: (): Promise<void> => ipcRenderer.invoke('window:close'),
-    minimize: (): Promise<void> => ipcRenderer.invoke('window:minimize'),
-    toggleMaximize: (): Promise<void> => ipcRenderer.invoke('window:toggleMaximize')
+    close: (): Promise<void> => ipcRenderer.invoke('window:close')
   },
   db: {
     getWatchlist: (): Promise<WatchlistItem[]> => ipcRenderer.invoke('db:getWatchlist'),

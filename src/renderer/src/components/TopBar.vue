@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { streamingApps } from '../../../shared/streamingApps'
 import { registerRow } from '../composables/spatialNav'
 import { launchApp } from '../api/appLauncher'
@@ -16,40 +16,54 @@ function open(appId: string): void {
   })
 }
 
+const now = ref(new Date())
+const clock = computed(() =>
+  now.value.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+)
+
 let unregister: (() => void) | null = null
+let clockTimer: ReturnType<typeof setInterval> | null = null
 
 onMounted(() => {
   unregister = registerRow(() => iconRefs.value)
+  clockTimer = setInterval(() => {
+    now.value = new Date()
+  }, 1000)
 })
 
 onUnmounted(() => {
   unregister?.()
+  if (clockTimer) clearInterval(clockTimer)
 })
 </script>
 
 <template>
   <nav class="top-bar">
-    <div
-      v-for="(app, index) in streamingApps"
-      :key="app.id"
-      :ref="(el) => setIconRef(el as Element | null, index)"
-      class="app-icon"
-      :style="{ backgroundColor: app.color }"
-      :title="app.name"
-      role="button"
-      tabindex="0"
-      @click="open(app.id)"
-      @keydown.enter="open(app.id)"
-    >
-      <img
-        v-if="app.icon"
-        :src="app.icon"
-        :alt="app.name"
-        class="app-icon-logo"
-        :class="{ 'app-icon-logo--cover': app.iconFit === 'cover' }"
-      />
-      <span v-else class="app-icon-label">{{ app.initials }}</span>
+    <div class="app-icons">
+      <div
+        v-for="(app, index) in streamingApps"
+        :key="app.id"
+        :ref="(el) => setIconRef(el as Element | null, index)"
+        class="app-icon"
+        :style="{ backgroundColor: app.color }"
+        :title="app.name"
+        role="button"
+        tabindex="0"
+        @click="open(app.id)"
+        @keydown.enter="open(app.id)"
+      >
+        <img
+          v-if="app.icon"
+          :src="app.icon"
+          :alt="app.name"
+          class="app-icon-logo"
+          :class="{ 'app-icon-logo--cover': app.iconFit === 'cover' }"
+        />
+        <span v-else class="app-icon-label">{{ app.initials }}</span>
+      </div>
     </div>
+
+    <span class="clock">{{ clock }}</span>
   </nav>
 </template>
 
@@ -57,8 +71,22 @@ onUnmounted(() => {
 .top-bar {
   display: flex;
   align-items: center;
-  gap: 20px;
+  justify-content: space-between;
   padding: 28px 48px 0 32px;
+}
+
+.app-icons {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.clock {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--ev-c-text-1);
+  letter-spacing: 0.5px;
+  font-variant-numeric: tabular-nums;
 }
 
 .app-icon {

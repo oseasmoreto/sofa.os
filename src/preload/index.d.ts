@@ -10,8 +10,6 @@ import type {
 interface SofaApi {
   window: {
     close: () => Promise<void>
-    minimize: () => Promise<void>
-    toggleMaximize: () => Promise<void>
   }
   db: {
     getWatchlist: () => Promise<WatchlistItem[]>

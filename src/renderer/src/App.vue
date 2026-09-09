@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import WindowControls from './components/WindowControls.vue'
 import Sidebar, { type SidebarView } from './components/Sidebar.vue'
 import HomeView from './components/HomeView.vue'
 import MoviesView from './components/MoviesView.vue'
@@ -19,7 +18,6 @@ const activeView = ref<SidebarView>('home')
 </script>
 
 <template>
-  <WindowControls />
   <div class="app-shell">
     <Sidebar v-model="activeView" />
     <div class="main-column">
