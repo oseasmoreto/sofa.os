@@ -42,7 +42,7 @@ onUnmounted(() => {
 
 <template>
   <section class="carousel">
-    <h2 class="label">{{ label }}</h2>
+    <h2 v-if="label" class="label">{{ label }}</h2>
     <div class="row" @scroll="onScroll">
       <div
         v-for="(item, index) in items"

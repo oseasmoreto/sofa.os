@@ -53,6 +53,39 @@ export const streamingApps: StreamingApp[] = [
       homeUrl: 'https://tv.apple.com',
       searchUrl: 'https://tv.apple.com/search?term={query}'
     }
+  },
+  {
+    id: 'crunchyroll',
+    name: 'Crunchyroll',
+    color: '#F47521',
+    initials: 'CR',
+    launch: {
+      type: 'browser',
+      homeUrl: 'https://www.crunchyroll.com',
+      searchUrl: 'https://www.crunchyroll.com/search?q={query}'
+    }
+  },
+  {
+    id: 'hbomax',
+    name: 'HBO Max',
+    color: '#5822B4',
+    initials: 'Max',
+    launch: {
+      type: 'browser',
+      homeUrl: 'https://www.hbomax.com',
+      searchUrl: 'https://www.hbomax.com/search?q={query}'
+    }
+  },
+  {
+    id: 'globoplay',
+    name: 'Globoplay',
+    color: '#E60014',
+    initials: 'GP',
+    launch: {
+      type: 'browser',
+      homeUrl: 'https://globoplay.globo.com',
+      searchUrl: 'https://globoplay.globo.com/busca/?q={query}'
+    }
   }
 ]
 
@@ -65,7 +98,11 @@ const PROVIDER_NAME_ALIASES: Record<string, string> = {
   'prime video': 'primevideo',
   'apple tv': 'appletv',
   'apple tv+': 'appletv',
-  'apple tv plus': 'appletv'
+  'apple tv plus': 'appletv',
+  crunchyroll: 'crunchyroll',
+  'hbo max': 'hbomax',
+  max: 'hbomax',
+  globoplay: 'globoplay'
 }
 
 export function matchStreamingApp(providerName: string): StreamingApp | undefined {

@@ -32,6 +32,14 @@ export function getNewReleases(page?: number): Promise<TitlePage> {
   return window.api.tmdb.getNewReleases(page)
 }
 
+export function getMoviesByGenre(genreId: number, page?: number): Promise<TitlePage> {
+  return window.api.tmdb.getMoviesByGenre(genreId, page)
+}
+
+export function getTvByGenre(genreId: number, page?: number): Promise<TitlePage> {
+  return window.api.tmdb.getTvByGenre(genreId, page)
+}
+
 export function getTitleDetails(id: number, mediaType: MediaType): Promise<TitleDetails> {
   return window.api.tmdb.getTitleDetails(id, mediaType)
 }

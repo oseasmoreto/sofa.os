@@ -21,6 +21,8 @@ interface SofaApi {
     getPopularTv: (page?: number) => Promise<TitlePage>
     getTopRatedTv: (page?: number) => Promise<TitlePage>
     getNewReleases: (page?: number) => Promise<TitlePage>
+    getMoviesByGenre: (genreId: number, page?: number) => Promise<TitlePage>
+    getTvByGenre: (genreId: number, page?: number) => Promise<TitlePage>
     getTitleDetails: (id: number, mediaType: MediaType) => Promise<TitleDetails>
   }
   app: {

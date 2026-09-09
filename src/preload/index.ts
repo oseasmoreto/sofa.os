@@ -33,6 +33,10 @@ const api = {
       ipcRenderer.invoke('tmdb:getTopRatedTv', page),
     getNewReleases: (page?: number): Promise<TitlePage> =>
       ipcRenderer.invoke('tmdb:getNewReleases', page),
+    getMoviesByGenre: (genreId: number, page?: number): Promise<TitlePage> =>
+      ipcRenderer.invoke('tmdb:getMoviesByGenre', genreId, page),
+    getTvByGenre: (genreId: number, page?: number): Promise<TitlePage> =>
+      ipcRenderer.invoke('tmdb:getTvByGenre', genreId, page),
     getTitleDetails: (id: number, mediaType: MediaType): Promise<TitleDetails> =>
       ipcRenderer.invoke('tmdb:getTitleDetails', id, mediaType)
   },

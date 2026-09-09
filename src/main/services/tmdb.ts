@@ -163,6 +163,27 @@ export async function getNewReleases(page = 1): Promise<TitlePage> {
   return toTitlePage(data, 'movie')
 }
 
+export async function getMoviesByGenre(genreId: number, page = 1): Promise<TitlePage> {
+  const data = await request<TmdbListResponse>('/discover/movie', {
+    with_genres: String(genreId),
+    sort_by: 'popularity.desc',
+    watch_region: 'BR',
+    region: 'BR',
+    page: String(page)
+  })
+  return toTitlePage(data, 'movie')
+}
+
+export async function getTvByGenre(genreId: number, page = 1): Promise<TitlePage> {
+  const data = await request<TmdbListResponse>('/discover/tv', {
+    with_genres: String(genreId),
+    sort_by: 'popularity.desc',
+    watch_region: 'BR',
+    page: String(page)
+  })
+  return toTitlePage(data, 'tv')
+}
+
 function dedupeProviders(providers: TmdbProvider[]): WatchProvider[] {
   const byId = new Map<number, TmdbProvider>()
   for (const provider of providers) {
@@ -208,6 +229,12 @@ export function registerTmdbIpc(): void {
   ipcMain.handle('tmdb:getPopularTv', (_event, page?: number) => getPopularTv(page))
   ipcMain.handle('tmdb:getTopRatedTv', (_event, page?: number) => getTopRatedTv(page))
   ipcMain.handle('tmdb:getNewReleases', (_event, page?: number) => getNewReleases(page))
+  ipcMain.handle('tmdb:getMoviesByGenre', (_event, genreId: number, page?: number) =>
+    getMoviesByGenre(genreId, page)
+  )
+  ipcMain.handle('tmdb:getTvByGenre', (_event, genreId: number, page?: number) =>
+    getTvByGenre(genreId, page)
+  )
   ipcMain.handle('tmdb:getTitleDetails', (_event, id: number, mediaType: MediaType) =>
     getTitleDetails(id, mediaType)
   )
