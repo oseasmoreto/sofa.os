@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Bookmark, Film, Home, Search, Sparkles, Tv } from 'lucide-vue-next'
+import { Bookmark, Film, Home, Power, Search, Sparkles, Tv } from 'lucide-vue-next'
 import { onMounted, onUnmounted, ref } from 'vue'
 import {
   focusGrid,
@@ -8,6 +8,7 @@ import {
   resumeSpatialNavigation,
   setLeftEdgeHandler
 } from '../composables/spatialNav'
+import { closeWindow } from '../api/windowControls'
 
 export type SidebarView = 'home' | 'movies' | 'series' | 'releases' | 'search' | 'watchlist'
 
@@ -31,7 +32,7 @@ function setItemRef(el: Element | null, index: number): void {
 }
 
 function focusItem(index: number): void {
-  const clamped = Math.min(Math.max(index, 0), navItems.length - 1)
+  const clamped = Math.min(Math.max(index, 0), itemRefs.value.length - 1)
   focusedIndex.value = clamped
   itemRefs.value[clamped]?.focus()
 }
@@ -99,6 +100,18 @@ onUnmounted(() => {
       <component :is="item.icon" :size="22" :stroke-width="2" />
       <span class="label">{{ item.label }}</span>
     </button>
+
+    <button
+      :ref="(el) => setItemRef(el as Element | null, navItems.length)"
+      type="button"
+      class="nav-item nav-item-close"
+      tabindex="0"
+      @click="closeWindow"
+      @focus="onFocusIn(navItems.length)"
+    >
+      <Power :size="22" :stroke-width="2" />
+      <span class="label">Fechar</span>
+    </button>
   </nav>
 </template>
 
@@ -156,5 +169,17 @@ onUnmounted(() => {
 .nav-item.active {
   background-color: rgba(166, 8, 102, 0.25);
   color: var(--ev-c-text-1);
+}
+
+.nav-item-close {
+  margin-top: auto;
+}
+
+.nav-item-close:hover {
+  color: #ff6b6b;
+}
+
+.nav-item-close:focus-visible {
+  box-shadow: 0 0 0 3px #ff5f57;
 }
 </style>
