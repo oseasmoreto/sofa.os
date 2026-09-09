@@ -32,16 +32,15 @@ async function enterSafariFullscreen(): Promise<void> {
   // Isso exige permissão de Acessibilidade concedida ao app (uma vez só,
   // em Ajustes do Sistema > Privacidade e Segurança > Acessibilidade).
   //
-  // Além da tela cheia, tentamos esconder a Tab Bar e desmarcar "Always
-  // Show Toolbar in Fullscreen" pelo menu View — assim a toolbar/barra de
-  // endereço soma ao comportamento nativo de auto-hide da tela cheia (só
-  // reaparece se o cursor for pro topo da tela). Os itens de menu são
-  // togglet: "Hide Tab Bar" só existe enquanto a tab bar estiver visível
-  // (o "exists" evita reexibir clicando de novo), e o item de toolbar é
-  // um checkbox lido via AXMenuItemMarkChar. Cada tentativa tem seu próprio
-  // "try" pra uma falhar sem impedir a outra — nomes de menu já variaram
-  // entre versões do Safari, então isso pode precisar de ajuste depois de
-  // testado na máquina real.
+  // Além da tela cheia, desmarcamos os dois checkboxes do menu Visualizar
+  // que forçam a barra de ferramentas/abas a ficar sempre visível — assim
+  // elas entram no auto-hide nativo da tela cheia (só reaparecem se o
+  // cursor for pro topo da tela). Confirmado num Safari em português
+  // (macOS localizado): o menu "Visualizar" é o 5º item do menu bar do
+  // processo Safari (1=Apple, 2=Safari, 3=Arquivo, 4=Editar, 5=Visualizar
+  // — por isso referenciado por posição, não por nome, já que o nome em
+  // si já é dependente do idioma do sistema). Os dois itens são checkboxes
+  // (lidos via AXMenuItemMarkChar), não toggles de texto dinâmico.
   const script = `
     tell application "Safari" to activate
     delay 0.6
@@ -57,18 +56,19 @@ async function enterSafariFullscreen(): Promise<void> {
         end if
 
         try
-          tell menu 1 of menu bar item "View" of menu bar 1
-            if exists menu item "Hide Tab Bar" then
-              click menu item "Hide Tab Bar"
+          tell menu 1 of menu bar item 5 of menu bar 1
+            set toolbarToggle to menu item "Sempre Mostrar Barra de Ferramentas em Tela Cheia"
+            if (value of attribute "AXMenuItemMarkChar" of toolbarToggle) is not missing value then
+              click toolbarToggle
             end if
           end tell
         end try
 
         try
-          tell menu 1 of menu bar item "View" of menu bar 1
-            set alwaysShowToolbar to menu item "Always Show Toolbar in Fullscreen"
-            if (value of attribute "AXMenuItemMarkChar" of alwaysShowToolbar) is not missing value then
-              click alwaysShowToolbar
+          tell menu 1 of menu bar item 5 of menu bar 1
+            set tabBarToggle to menu item "Sempre Mostrar Barra de Abas"
+            if (value of attribute "AXMenuItemMarkChar" of tabBarToggle) is not missing value then
+              click tabBarToggle
             end if
           end tell
         end try
