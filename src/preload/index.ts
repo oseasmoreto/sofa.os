@@ -1,6 +1,12 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
-import type { MediaType, TitleDetails, TitlePage, WatchlistItem } from '../shared/types'
+import type {
+  MediaType,
+  TitleDetails,
+  TitlePage,
+  UpdateStatus,
+  WatchlistItem
+} from '../shared/types'
 
 // Custom APIs for renderer
 const api = {
@@ -45,6 +51,16 @@ const api = {
   app: {
     launch: (appId: string, query?: string): Promise<void> =>
       ipcRenderer.invoke('app:launch', appId, query)
+  },
+  updater: {
+    check: (): Promise<void> => ipcRenderer.invoke('updater:check'),
+    quitAndInstall: (): Promise<void> => ipcRenderer.invoke('updater:quitAndInstall'),
+    getVersion: (): Promise<string> => ipcRenderer.invoke('updater:getVersion'),
+    onStatus: (callback: (status: UpdateStatus) => void): (() => void) => {
+      const listener = (_event: unknown, status: UpdateStatus): void => callback(status)
+      ipcRenderer.on('updater:status', listener)
+      return () => ipcRenderer.removeListener('updater:status', listener)
+    }
   }
 }
 

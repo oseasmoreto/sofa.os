@@ -1,5 +1,11 @@
 import { ElectronAPI } from '@electron-toolkit/preload'
-import type { MediaType, TitleDetails, TitlePage, WatchlistItem } from '../shared/types'
+import type {
+  MediaType,
+  TitleDetails,
+  TitlePage,
+  UpdateStatus,
+  WatchlistItem
+} from '../shared/types'
 
 interface SofaApi {
   window: {
@@ -28,6 +34,12 @@ interface SofaApi {
   }
   app: {
     launch: (appId: string, query?: string) => Promise<void>
+  }
+  updater: {
+    check: () => Promise<void>
+    quitAndInstall: () => Promise<void>
+    getVersion: () => Promise<string>
+    onStatus: (callback: (status: UpdateStatus) => void) => () => void
   }
 }
 

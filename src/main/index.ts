@@ -6,6 +6,7 @@ import { registerWindowControls } from './windowControls'
 import { registerWatchlistIpc } from './watchlist'
 import { registerTmdbIpc } from './services/tmdb'
 import { registerAppLauncherIpc } from './appLauncher'
+import { registerUpdaterIpc } from './updater'
 
 try {
   process.loadEnvFile()
@@ -75,6 +76,7 @@ app.whenReady().then(() => {
   registerWatchlistIpc()
   registerTmdbIpc()
   registerAppLauncherIpc()
+  registerUpdaterIpc()
 
   createWindow()
 

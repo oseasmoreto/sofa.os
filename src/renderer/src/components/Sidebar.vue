@@ -1,6 +1,18 @@
 <script setup lang="ts">
-import { Bookmark, Film, Home, Power, Search, Sparkles, Tv } from 'lucide-vue-next'
-import { onMounted, onUnmounted, ref } from 'vue'
+import {
+  AlertTriangle,
+  Bookmark,
+  Check,
+  Download,
+  Film,
+  Home,
+  Power,
+  RefreshCw,
+  Search,
+  Sparkles,
+  Tv
+} from 'lucide-vue-next'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import {
   focusGrid,
   pauseSpatialNavigation,
@@ -9,6 +21,7 @@ import {
   setLeftEdgeHandler
 } from '../composables/spatialNav'
 import { closeWindow } from '../api/windowControls'
+import { useUpdater } from '../composables/useUpdater'
 
 export type SidebarView = 'home' | 'movies' | 'series' | 'releases' | 'search' | 'watchlist'
 
@@ -26,6 +39,55 @@ const navItems: { id: SidebarView; label: string; icon: typeof Home }[] = [
 
 const itemRefs = ref<HTMLElement[]>([])
 const focusedIndex = ref(0)
+
+const { status: updateStatus, check: checkForUpdates, install: installUpdate } = useUpdater()
+
+const updateLabel = computed(() => {
+  switch (updateStatus.value.state) {
+    case 'checking':
+      return 'Verificando…'
+    case 'available':
+      return 'Baixando…'
+    case 'downloading':
+      return `Baixando ${updateStatus.value.percent}%`
+    case 'downloaded':
+      return 'Reiniciar'
+    case 'not-available':
+      return 'Atualizado'
+    case 'error':
+      return 'Falha'
+    default:
+      return 'Atualizar'
+  }
+})
+
+const updateIcon = computed(() => {
+  switch (updateStatus.value.state) {
+    case 'downloaded':
+      return Download
+    case 'not-available':
+      return Check
+    case 'error':
+      return AlertTriangle
+    default:
+      return RefreshCw
+  }
+})
+
+const updateBusy = computed(
+  () =>
+    updateStatus.value.state === 'checking' ||
+    updateStatus.value.state === 'available' ||
+    updateStatus.value.state === 'downloading'
+)
+
+function onUpdateActivate(): void {
+  if (updateStatus.value.state === 'downloaded') {
+    installUpdate()
+  } else if (!updateBusy.value) {
+    checkForUpdates()
+  }
+}
 
 function setItemRef(el: Element | null, index: number): void {
   if (el instanceof HTMLElement) itemRefs.value[index] = el
@@ -104,10 +166,23 @@ onUnmounted(() => {
     <button
       :ref="(el) => setItemRef(el as Element | null, navItems.length)"
       type="button"
+      class="nav-item nav-item-update"
+      :class="{ 'is-error': updateStatus.state === 'error' }"
+      tabindex="0"
+      @click="onUpdateActivate"
+      @focus="onFocusIn(navItems.length)"
+    >
+      <component :is="updateIcon" :size="22" :stroke-width="2" />
+      <span class="label">{{ updateLabel }}</span>
+    </button>
+
+    <button
+      :ref="(el) => setItemRef(el as Element | null, navItems.length + 1)"
+      type="button"
       class="nav-item nav-item-close"
       tabindex="0"
       @click="closeWindow"
-      @focus="onFocusIn(navItems.length)"
+      @focus="onFocusIn(navItems.length + 1)"
     >
       <Power :size="22" :stroke-width="2" />
       <span class="label">Fechar</span>
@@ -171,8 +246,12 @@ onUnmounted(() => {
   color: var(--ev-c-text-1);
 }
 
-.nav-item-close {
+.nav-item-update {
   margin-top: auto;
+}
+
+.nav-item-update.is-error {
+  color: #ff8a8a;
 }
 
 .nav-item-close:hover {
